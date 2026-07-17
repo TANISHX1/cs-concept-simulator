@@ -1,12 +1,31 @@
-# Merge sort
+import MergeSortCode from './MergeSortCode.tsx'
 
-Merge sort repeatedly divides an array into halves, sorts each half, then merges the sorted halves. The merge step is linear, and the recursion has logarithmic depth.
+## What merge sort solves
 
-```text
-mergeSort(A):
-  if length(A) <= 1: return A
-  split A into left and right
-  return merge(mergeSort(left), mergeSort(right))
-```
+Merge sort orders an array by dividing it into smaller arrays, solving each smaller problem, and merging the sorted results. Each merge pass touches every item once, while the recursion has logarithmic depth.
 
-**Complexity:** `O(n log n)` time and `O(n)` auxiliary space. It is stable, but unlike in-place quicksort it needs a temporary buffer.
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow">Core idea</span><h3>Divide → solve → combine</h3><p>Split until each piece has one item. A one-item array is already sorted, so merge neighboring pieces while choosing the smaller front item.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow">Invariant</span><h3>Every merge stays sorted</h3><p>Both input halves are sorted before a merge begins. Comparing their front elements always selects the smallest remaining value.</p></section>
+</div>
+
+## Algorithm steps
+
+1. Find the midpoint and split the current range into two halves.
+2. Recursively sort the left and right halves.
+3. Copy the smaller pointed-to value into a temporary buffer.
+4. Copy the merged buffer back into the original range.
+
+## Pseudocode
+
+<MergeSortCode />
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">Time</span><strong className="complexity-value">O(n log n)</strong><span className="complexity-note">best, average, and worst case</span></div><div><span className="complexity-label">Space</span><strong className="complexity-value">O(n)</strong><span className="complexity-note">temporary merge buffer</span></div><div><span className="complexity-label">Stability</span><strong className="complexity-value">Stable</strong><span className="complexity-note">equal values keep their order</span></div></div>
+
+## Common pitfalls
+
+- Copying the remaining tail of neither half after one pointer reaches the end.
+- Reusing one shared buffer without tracking the active range.
+- Mixing inclusive and exclusive midpoint bounds between recursive calls.

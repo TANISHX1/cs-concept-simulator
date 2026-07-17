@@ -18,6 +18,12 @@
   --success: #5ee6a8;
   --warning: #f3c969;
   --error: #f07178;
+  --code-surface: #0d0f12;
+  --code-foreground: #d7dee9;
+  --code-keyword: #c792ea;
+  --code-function: #82aaff;
+  --code-variable: #addb67;
+  --code-number: #f78c6c;
 }
 [data-theme="light"] {
   --background: #faf8f3;
@@ -34,6 +40,12 @@
   --success: #237a52;
   --warning: #8b6400;
   --error: #a53139;
+  --code-surface: #ebe7dd;
+  --code-foreground: #2a2824;
+  --code-keyword: #8f3f9f;
+  --code-function: #245a9c;
+  --code-variable: #3d6e25;
+  --code-number: #a8492c;
 }
 :root {
   --font-sans: Inter, Geist, ui-sans-serif, system-ui, sans-serif;

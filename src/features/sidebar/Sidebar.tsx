@@ -1,4 +1,11 @@
-import { ChevronDown, ChevronRight, Folder, FileCode2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  FileCode2,
+  Folder,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { conceptTree, sectionLabels } from "../../lib/contentLoader";
@@ -43,10 +50,39 @@ function Node({ node, depth = 0 }: { node: ConceptNode; depth?: number }) {
   );
 }
 export function Sidebar() {
+  const [hidden, setHidden] = useState(false);
+
+  if (hidden) {
+    return (
+      <aside className="hidden w-12 shrink-0 border-r border-border bg-surface/40 lg:block">
+        <button
+          type="button"
+          aria-label="Show Library sidebar"
+          title="Show Library"
+          onClick={() => setHidden(false)}
+          className="m-2 rounded-lg p-2 text-muted transition hover:bg-surface-hover hover:text-foreground"
+        >
+          <PanelLeftOpen size={16} />
+        </button>
+      </aside>
+    );
+  }
+
   return (
     <aside className="scrollbar hidden w-64 shrink-0 overflow-y-auto border-r border-border bg-surface/40 py-4 lg:block">
-      <div className="px-4 pb-3 font-mono text-[10px] uppercase tracking-[.2em] text-muted">
-        Library
+      <div className="flex items-center justify-between px-4 pb-3">
+        <span className="font-mono text-[10px] uppercase tracking-[.2em] text-muted">
+          Library
+        </span>
+        <button
+          type="button"
+          aria-label="Hide Library sidebar"
+          title="Hide Library"
+          onClick={() => setHidden(true)}
+          className="rounded-md p-1 text-muted transition hover:bg-surface-hover hover:text-foreground"
+        >
+          <PanelLeftClose size={15} />
+        </button>
       </div>
       {conceptTree.map((n) => (
         <div key={n.path}>

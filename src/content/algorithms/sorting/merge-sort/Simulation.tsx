@@ -28,19 +28,16 @@ export default function MergeSortSimulation() {
     [step],
   );
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5">
+    <div className="p-0">
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[.22em] text-muted">
-            Live simulation
-          </p>
-          <h3 className="mt-1 text-lg font-semibold">Divide, sort, merge</h3>
+          <h3 className="text-lg font-semibold">Divide, sort, merge</h3>
         </div>
         <span className="rounded-full bg-background px-3 py-1 font-mono text-xs text-muted">
           pass {Math.min(step, source.length)}/8
         </span>
       </div>
-      <div className="flex h-48 items-end justify-center gap-2 rounded-xl border border-border bg-background p-6">
+      <div className="flex h-48 items-end justify-center gap-2 p-6">
         {values.map(({ v, i }) => (
           <motion.div
             key={i}

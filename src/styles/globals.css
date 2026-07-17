@@ -21,3 +21,31 @@ input:focus-visible {
   background: var(--border);
   border-radius: 6px;
 }
+
+.logic-grid,
+.complexity-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0 2rem;
+}
+.logic-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.logic-card,
+.complexity-grid > div {
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: color-mix(in oklab, var(--surface) 72%, transparent);
+  padding: 1rem;
+}
+.logic-card h3 { margin: 0.4rem 0; font-size: 0.95rem; }
+.logic-card p,
+.complexity-note { color: var(--foreground-muted); font-size: 0.82rem; line-height: 1.65; }
+.logic-eyebrow,
+.complexity-label { color: var(--accent-algorithms); font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.logic-code { overflow-x: auto; margin: 1.25rem 0 2rem; border-radius: 0.9rem; background: var(--code-surface); padding: 1.2rem 1.35rem; color: var(--code-foreground); font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.8; }
+.code-keyword { color: var(--code-keyword); }
+.code-function { color: var(--code-function); }
+.code-variable { color: var(--code-variable); }
+.code-number { color: var(--code-number); }
+.complexity-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.complexity-grid > div { display: flex; flex-direction: column; gap: 0.35rem; }
+.complexity-value { font-family: var(--font-mono); font-size: 1.1rem; }
