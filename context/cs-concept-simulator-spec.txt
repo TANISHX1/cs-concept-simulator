@@ -1,0 +1,631 @@
+================================================================================
+CS CONCEPT SIMULATOR — FULL PROJECT SPECIFICATION FOR AI BUILD AGENT
+================================================================================
+Document purpose: This file is the single source of truth for an AI coding
+agent to scaffold, build, and extend this application. Follow it exactly.
+Where a decision is marked [LOCKED], do not deviate without asking.
+Where a decision is marked [AGENT DISCRETION], use best judgment within the
+stated constraints.
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+Name: CS Concept Simulator (working title — agent may propose alternatives)
+
+What it is: A web application for learning computer science concepts through
+interactive visual simulations. Organized into top-level sections (Algorithms,
+Operating Systems, Networking, System Programming, Languages, etc.), each
+containing a hierarchy of concepts and sub-concepts, similar to a file/directory
+tree. Each concept page contains: an interactive simulation, a logic/explanation
+write-up, and a curated references list. A persistent AI chat side-panel is
+available throughout the working area to help the user understand the concept
+they are currently viewing.
+
+Core requirements:
+- NO login / NO authentication anywhere. App opens directly into content.
+- Landing page with a 3D animated hero, then a direct entry into the working
+  "Workspace" area (IDE-like 3-pane layout).
+- Must be trivially extensible: adding a brand-new concept/simulation should
+  require ONLY adding new content files — no changes to routing code, sidebar
+  code, or app shell code.
+- Visual identity: sharp, professional, "native OS app" feel — NOT a generic
+  marketing website. Reference aesthetic: Vercel Dashboard / Linear / VS Code.
+- Two themes: exact Vercel-style dark theme, and a warm "buttery" light theme.
+  Full color system detailed in Section 6.
+
+================================================================================
+2. TECH STACK [LOCKED]
+================================================================================
+- Build tool / framework: Vite + React (SPA). Do NOT use Next.js. Do NOT mix
+  Vite and Next.js — they are mutually exclusive framework choices.
+- Language: TypeScript throughout (strict mode on).
+- Routing: React Router v6 (client-side only).
+- Styling: Tailwind CSS + shadcn/ui (Radix primitives underneath).
+- 3D graphics (landing page only): @react-three/fiber + @react-three/drei
+  (React wrappers over Three.js — do not use raw three.js imperatively).
+- Simulation animation library (default/shared): Framer Motion, for consistent
+  transition language across all simulations. Individual simulations may layer
+  SVG, Canvas (via Konva.js if needed), or D3.js underneath as required by the
+  concept type (see Section 10 for the mapping).
+- Content authoring format: MDX (for logic write-ups that may embed live
+  React components inline).
+- AI chat backend: ONE serverless function (see Section 9). Provider: Google
+  Gemini API. The API key lives ONLY in the serverless function's environment
+  variables — it must NEVER be shipped to or callable from client-side code.
+- Icons: Lucide React.
+- Fonts: Inter or Geist for UI text; JetBrains Mono or IBM Plex Mono for code/
+  pseudocode blocks.
+- Command palette: cmdk library (pairs natively with shadcn).
+- Deployment target: Vercel or Netlify (both support static SPA hosting +
+  a single serverless function in the same deploy — no separate backend
+  service required).
+
+Explicitly OUT of scope / do not add:
+- No Redux / Zustand / MobX — state needs are minimal (see Section 11).
+- No database. No user accounts. No persistent server-side storage.
+- No SSR/SSG — this is a pure client-rendered SPA.
+
+================================================================================
+3. FULL FOLDER / FILE STRUCTURE [LOCKED SKELETON]
+================================================================================
+/project-root
+  /public
+      favicon, static assets
+  /src
+    /app
+        App.tsx                 — root component, mounts router + providers
+        router.tsx               — route definitions
+        providers.tsx            — ThemeProvider, any context providers
+    /pages
+        Landing.tsx               — hero + 3D scene (lazy-loaded scene)
+        Workspace.tsx             — main 3-pane shell (sidebar/content/chat)
+    /content                      <-- THE PLUGIN LAYER. All concepts live here.
+        /algorithms
+            /shortest-path
+                meta.json
+                Simulation.tsx
+                logic.mdx
+                references.json
+            /sorting
+                /merge-sort
+                    meta.json
+                    Simulation.tsx
+                    logic.mdx
+                    references.json
+                /quick-sort
+                    ...same 4 files
+        /os
+            /process-scheduling
+                /round-robin
+                /priority-scheduling
+        /networking
+            /tcp-handshake
+        /systems
+            /memory-allocation
+        /languages
+            /c
+            /python
+        registry.ts               — AUTO-BUILT index (see Section 4)
+    /features                     — reusable app logic, NOT content
+        /sidebar
+            Sidebar.tsx
+            SidebarTree.tsx
+            useSidebarTree.ts
+        /chat
+            ChatPanel.tsx
+            ChatMessage.tsx
+            useChat.ts
+        /references
+            ReferencesList.tsx
+            ReferenceCard.tsx
+        /search
+            CommandPalette.tsx
+            useSearchIndex.ts
+        /theme
+            ThemeToggle.tsx
+            ThemeProvider.tsx
+    /components/ui                — shadcn primitives (button, card, dialog,
+                                     tabs, badge, tooltip, separator, etc.)
+    /lib
+        contentLoader.ts          — glob scanner, builds registry
+        api.ts                    — fetch wrapper to /api/chat
+        types.ts                  — Meta, Reference, Section, ConceptNode types
+        utils.ts                  — cn() helper, path parsing helpers
+    /styles
+        tokens.css                — CSS variables for both themes
+        globals.css               — Tailwind base + global resets
+    main.tsx                      — app entry point
+  /api
+      chat.ts                     — the ONE serverless function (Gemini proxy)
+  index.html
+  vite.config.ts
+  tailwind.config.ts
+  tsconfig.json
+  package.json
+
+================================================================================
+4. CONTENT PLUGIN ARCHITECTURE (CORE MECHANISM) [LOCKED]
+================================================================================
+This is the most important architectural pattern in the app. It is what
+guarantees "adding a new concept = only add files, no code changes."
+
+4.1 Folder convention
+Every concept (and sub-concept) is a folder under /src/content/<section>/
+containing exactly these 4 files:
+  - meta.json          (required)
+  - Simulation.tsx      (required)
+  - logic.mdx           (required)
+  - references.json     (required, may be an empty array initially)
+
+Nesting is allowed arbitrarily deep to represent hierarchy, e.g.:
+  /content/algorithms/graph/shortest-path/dijkstra/...
+The registry builder must support arbitrary depth, not just 2 levels.
+
+4.2 meta.json schema
+{
+  "id": "shortest-path",                 // must match folder name, kebab-case
+  "title": "Shortest Path Algorithms",
+  "section": "algorithms",               // top-level section key
+  "parentPath": "algorithms/graph",      // full path minus this folder, for
+                                          // breadcrumb + sidebar nesting
+  "order": 3,                            // sort order within its parent
+  "difficulty": "intermediate",          // "beginner" | "intermediate" | "advanced"
+  "tags": ["graph", "greedy", "dijkstra", "bellman-ford"],
+  "prerequisites": ["algorithms/graph/bfs-dfs"],  // array of concept ids/paths
+  "summary": "One or two sentence description shown in sidebar hover / search results",
+  "accentSection": "algorithms"          // used to pick the correct accent
+                                          // color token (see Section 6.4)
+}
+
+4.3 Simulation.tsx contract
+- Must be a default-exported React component with NO required props (it may
+  accept optional props for things like initial state, but must render fully
+  standalone with defaults).
+- Must be self-contained: all state, animation logic, and controls (play/
+  pause/step/reset/speed slider) live inside this file or its own local
+  sub-components in the same folder if it grows large (e.g. create a
+  /shortest-path/components/ subfolder for internal pieces — this is allowed
+  and does not break the plugin contract, since the loader only ever imports
+  Simulation.tsx as the entry point).
+- Must use Framer Motion for transitions to keep visual language consistent
+  app-wide, and must consume the theme's CSS variables for colors (never
+  hardcode hex values inside a simulation file).
+- Must implement standard simulation controls as a shared UI convention:
+  Play / Pause / Step Forward / Step Back / Reset / Speed control. Build a
+  reusable <SimulationControls /> component in /components/ui and have every
+  Simulation.tsx use it, so all simulations feel consistent.
+
+4.4 logic.mdx contract
+- Contains the written explanation: problem definition, step-by-step logic,
+  pseudocode (in fenced code blocks using the mono font), time/space
+  complexity, common pitfalls.
+- Since it's MDX, it MAY embed small inline React components (e.g. a mini
+  complexity comparison table component) — but the main interactive
+  simulation always lives in Simulation.tsx, not inline in the MDX.
+
+4.5 references.json schema
+[
+  {
+    "title": "Dijkstra's Algorithm — CLRS Chapter 24",
+    "type": "book",                 // "paper" | "video" | "doc" | "tool" | "book" | "article"
+    "source": "Introduction to Algorithms (CLRS)",
+    "url": "https://...",
+    "verified": true                // manually curated/verified flag, shown as a badge
+  }
+]
+
+4.6 registry.ts — auto-build logic
+Implemented in /src/lib/contentLoader.ts using Vite's import.meta.glob:
+
+  const metas       = import.meta.glob('/src/content/**/meta.json', { eager: true });
+  const simulations = import.meta.glob('/src/content/**/Simulation.tsx');
+  const logics       = import.meta.glob('/src/content/**/logic.mdx');
+  const references   = import.meta.glob('/src/content/**/references.json', { eager: true });
+
+Processing steps the agent must implement:
+  1. For every meta.json match, parse the folder path into segments to derive
+     section > parent chain > concept id.
+  2. Build a tree data structure (ConceptNode[]) mirroring the folder
+     hierarchy, sorted by each node's `order` field.
+  3. Attach lazy-loading references (not the resolved component) for
+     Simulation.tsx and logic.mdx — these stay as functions to be called by
+     React.lazy() at route-render time, so each concept is its own code-split
+     chunk.
+  4. Attach the eagerly-loaded references.json content directly (small JSON,
+     fine to bundle eagerly).
+  5. Export: 
+       - `conceptTree: ConceptNode[]`      (for Sidebar)
+       - `flatConceptIndex: ConceptNode[]`  (for search/command palette)
+       - `getConceptByPath(path: string)`   (for the route resolver)
+  6. This file must require ZERO manual edits when new content folders are
+     added — it is purely derived from the filesystem scan.
+
+4.7 Adding a new concept — the actual workflow the agent enables
+  1. Create /src/content/<section>/<new-concept>/ with the 4 required files.
+  2. Fill meta.json, write Simulation.tsx, write logic.mdx, add references.
+  3. Save. Dev server hot-reloads; sidebar, routing, breadcrumbs, and search
+     all pick it up automatically. Nothing else is touched.
+
+================================================================================
+5. ROUTING [LOCKED]
+================================================================================
+Using React Router v6, single dynamic catch-all pattern:
+
+  /                                     -> Landing.tsx
+  /workspace/*                          -> Workspace.tsx, which reads the
+                                            wildcard remainder as the content
+                                            path and resolves it via
+                                            getConceptByPath()
+
+Inside Workspace.tsx:
+  - Parse the URL path segments after /workspace/ into a content path
+    (e.g. "algorithms/graph/shortest-path").
+  - Look up the node via getConceptByPath().
+  - If found: React.lazy()-load its Simulation.tsx and logic.mdx inside
+    <Suspense> boundaries with skeleton/loading states.
+  - If not found: render a clean 404 state inside the workspace shell (not a
+    full page reload/redirect).
+  - If path resolves to a section or intermediate folder with children but no
+    own content: render an index/overview listing its children as cards.
+
+Breadcrumb component derives its trail directly from the same path segments
+— do not maintain a separate breadcrumb state.
+
+================================================================================
+6. THEMING & COLOR SYSTEM [LOCKED — FOLLOW EXACT VALUES]
+================================================================================
+6.1 Mechanism
+- Theme state stored in React Context (features/theme/ThemeProvider.tsx) and
+  mirrored to `localStorage` (key: "cs-sim-theme") purely for persistence
+  across reloads — NOT tied to any user account.
+- Active theme is applied via `data-theme="dark"` or `data-theme="light"`
+  attribute on the `<html>` element.
+- ALL colors are defined as CSS custom properties in /src/styles/tokens.css,
+  scoped under `[data-theme="dark"]` and `[data-theme="light"]` selectors.
+  Tailwind config maps utility classes to these variables (e.g.
+  `bg-background`, `text-foreground`, `border-border`) — components must
+  NEVER hardcode hex/rgb colors directly.
+
+6.2 Semantic token layer (both themes must define all of these)
+  --background
+  --surface            (cards/panels — one step off background)
+  --surface-hover
+  --border
+  --foreground          (primary text)
+  --foreground-muted    (secondary/meta text)
+  --accent-algorithms
+  --accent-os
+  --accent-networking
+  --accent-systems
+  --accent-languages
+  --success
+  --warning
+  --error
+
+6.3 Theme 1 — Dark ("exact Vercel" aesthetic)
+  --background:        #0a0a0a
+  --surface:            #111111
+  --surface-hover:      #1a1a1a
+  --border:             rgba(255,255,255,0.10)
+  --foreground:         #ededed
+  --foreground-muted:   #a1a1a1
+
+  Contrast check (must hold):
+    #ededed on #0a0a0a  -> ~18:1  (WCAG AAA, target: body text)
+    #a1a1a1 on #0a0a0a  -> ~8:1   (AA/AAA, target: secondary/meta text)
+
+6.4 Theme 2 — Light ("buttery" — NOT pure white, warm-toned)
+  --background:        #faf8f3
+  --surface:            #f0ece2
+  --surface-hover:      #e8e2d4
+  --border:             rgba(30,25,15,0.08)
+  --foreground:         #1f1c17
+  --foreground-muted:   #6b6558
+
+  Contrast check (must hold):
+    #1f1c17 on #faf8f3  -> ~15:1  (WCAG AAA, target: body text)
+    #6b6558 on #faf8f3  -> ~6:1   (AA, target: secondary/meta text)
+
+  Rule: never use pure #ffffff as background and never pure #000000 as text
+  anywhere in the light theme — this is what breaks the "buttery" warmth.
+
+6.5 Section accent colors — OKLCH, fixed hue across themes
+Define these as OKLCH values (fall back to computed hex via a build step or
+a CSS `color-mix`/`oklch()` function if targeting modern browsers only —
+agent discretion on exact CSS implementation, but the perceptual values below
+are fixed).
+
+  Section        Hue anchor   Dark theme token value        Light theme token value
+  Algorithms     Blue         oklch(70% 0.15 250)            oklch(55% 0.16 250)
+  OS             Orange       oklch(72% 0.16 55)              oklch(58% 0.17 55)
+  Networking     Green        oklch(72% 0.14 150)            oklch(55% 0.15 150)
+  Systems        Purple       oklch(70% 0.15 300)            oklch(55% 0.16 300)
+  Languages      Teal         oklch(72% 0.14 190)            oklch(55% 0.15 190)
+
+  Rule (must be enforced in code review / component design): accent colors
+  are used ONLY for icons, active/selected states, small badges, borders on
+  hover, and highlight elements inside simulations (e.g. active graph node).
+  Accent colors must NEVER be used as body/paragraph text color. Body text
+  always uses --foreground / --foreground-muted regardless of section.
+
+6.6 Typography tokens
+  --font-sans: 'Inter', 'Geist', system-ui, sans-serif
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace
+  Use --font-mono for: pseudocode blocks, complexity notation (Big-O), code
+  snippets inside logic.mdx, and any raw data/array visualizations in
+  simulations (reinforces the "dev tool" feel).
+
+6.7 Theme toggle UI
+  Simple two-state icon toggle (sun/moon or similar) placed in the Workspace
+  top bar / header. Instant switch, no page reload, animate the transition
+  of background/surface colors over ~150-200ms for polish (avoid a harsh
+  instant flash).
+
+================================================================================
+7. LAYOUT — WORKSPACE 3-PANE SHELL [LOCKED]
+================================================================================
+Workspace.tsx structure:
+
+  Header (thin top bar)
+    - Logo/name (left)
+    - Breadcrumb (center-left, derived from route path)
+    - Command palette trigger / Cmd+K hint (center-right)
+    - Theme toggle (right)
+
+  Body (flex row, fills remaining height)
+    ├── Sidebar (left, collapsible, resizable optional)
+    │     - Renders conceptTree from registry as a nested collapsible tree,
+    │       VS Code Explorer-style (chevron expand/collapse, indent per depth,
+    │       icon per node type: section / concept / sub-concept)
+    │     - Active path highlighted using the current section's accent color
+    │
+    ├── MainContent (center, flexible width)
+    │     - Tabs or stacked sections: [Simulation | Logic | References]
+    │       (agent discretion: tabs are cleaner for a dense IDE feel, stacked
+    │       is simpler to implement — recommend tabs to match the "native app"
+    │       goal, using shadcn Tabs component)
+    │     - Simulation.tsx rendered inside <Suspense fallback={<SkeletonSim/>}>
+    │     - logic.mdx rendered inside <Suspense> via an MDX provider
+    │     - References tab renders ReferencesList from references.json
+    │
+    └── ChatPanel (right, fixed width ~320-380px, collapsible to icon-only rail)
+          - Rectangular card-style panel, NOT full height intrusive — should
+            feel like a docked assistant card, matching Cursor/Copilot
+            sidebar conventions
+          - MUST be mounted OUTSIDE the route-based <Suspense> boundaries so
+            it does NOT unmount/remount when the user navigates between
+            concepts — only the "current concept context" fed to it updates.
+          - Chat message history persists only for the session (component
+            state, no backend persistence — no auth means nothing to persist
+            to).
+
+Mobile/responsive note [AGENT DISCRETION]: collapse Sidebar and ChatPanel
+into slide-over drawers below a reasonable breakpoint (e.g. 1024px); keep
+MainContent as the primary view on small screens.
+
+================================================================================
+8. LANDING PAGE [LOCKED]
+================================================================================
+- Route: `/`
+- Hero section with a 3D animated scene built with @react-three/fiber +
+  @react-three/drei. Suggested visual: an abstract animated network/graph of
+  nodes and connecting edges (ties thematically to "algorithms/graph/
+  networking" without needing literal icons), slowly rotating, reacting
+  subtly to mouse movement (parallax).
+- The 3D scene component MUST be code-split and lazy-loaded
+  (`React.lazy(() => import('./HeroScene'))`) so the Three.js bundle is only
+  downloaded when a user visits `/`, never when they're already working in
+  `/workspace/*`.
+- Below/around the hero: short value proposition text, section preview cards
+  (Algorithms / OS / Networking / Systems / Languages) each tinted with its
+  accent color, and a clear primary CTA ("Enter Workspace" or similar) that
+  routes directly to `/workspace` (defaulting to a sensible landing concept
+  or an overview/index page listing all sections) — NO auth gate, NO
+  intermediate steps.
+
+================================================================================
+9. AI CHAT SYSTEM [LOCKED]
+================================================================================
+9.1 Serverless function — /api/chat.ts
+- Single file, deployed as a Vercel/Netlify serverless function alongside
+  the static SPA build (same repo, same deploy).
+- Responsibilities:
+    1. Receive POST request with { message: string, context: string,
+       history: {role: string, content: string}[] }
+    2. Read GEMINI_API_KEY from environment variables (server-side only,
+       set in Vercel/Netlify project settings — never committed to repo,
+       never exposed in any client bundle).
+    3. Construct request to Google Gemini API, injecting `context` (the
+       current concept's logic.mdx content + meta.json title/summary) into
+       the system/instruction portion of the prompt so answers are grounded
+       in what the user is currently viewing.
+    4. Forward the model's response back to the client as JSON.
+    5. Handle errors gracefully (rate limits, malformed input) and return
+       clean error responses — never leak the API key or raw provider error
+       internals to the client.
+- CORS: restrict to same-origin (the deployed app's own domain) since this
+  is not meant to be a public open API.
+
+9.2 Client-side — features/chat/
+- ChatPanel.tsx: renders message list + input box + send button, matches
+  card-style compact layout described in Section 7.
+- useChat.ts hook: manages local message state, calls lib/api.ts's
+  `sendChatMessage()` which POSTs to `/api/chat`, handles loading/streaming
+  state (streaming is [AGENT DISCRETION] — simple request/response is
+  acceptable for v1; can upgrade to streamed tokens later without changing
+  the architecture).
+- Context injection: Workspace.tsx (or a shared context provider) tracks
+  "currently active concept," and ChatPanel reads that to include the right
+  context string with each message sent — this must update automatically as
+  the user navigates concepts, without the user having to re-explain what
+  they're looking at.
+- No chat history is persisted beyond the browser session/tab lifetime (no
+  auth, no backend storage — by design).
+
+================================================================================
+10. SIMULATION ENGINE MAPPING [AGENT DISCRETION WITHIN THIS TABLE]
+================================================================================
+Use this table as the default choice per concept type. Framer Motion is used
+for transitions/animation timing in all cases; the table below is about the
+underlying rendering primitive.
+
+  Concept type                              Recommended engine
+  ------------------------------------------------------------------
+  Graph/tree algorithms                     React Flow, or D3.js
+  (Dijkstra, BFS/DFS, MST, A*)               force-directed graph
+
+  Sorting / array-based visualizations       SVG + CSS/Framer Motion
+  (merge sort, quicksort, heap sort)         transitions on bar elements
+
+  OS concepts                                 Canvas (via Konva.js wrapper)
+  (scheduling, paging, memory allocation)     for block/timeline diagrams
+
+  Networking                                  SVG + Framer Motion, animated
+  (packet flow, TCP handshake, routing)       paths/markers along SVG paths
+
+  Low-level/systems programming               Custom SVG or Canvas byte-grid
+  (memory layout, pointers, stack/heap)       visualizations
+
+  Language-specific concept demos             Depends on concept — default to
+  (closures, async/event loop, etc.)          SVG/Framer Motion unless a
+                                               specific need dictates Canvas
+
+All simulations must consume theme CSS variables for every color used
+(no hardcoded hex inside any Simulation.tsx) and must implement the shared
+<SimulationControls /> (Play/Pause/Step/Reset/Speed) described in 4.3.
+
+================================================================================
+11. STATE MANAGEMENT RULES [LOCKED]
+================================================================================
+- No global state library (Redux/Zustand/MobX). This app's state needs are
+  small enough for React Context + URL state.
+- Theme (dark/light): React Context, mirrored to localStorage for
+  persistence only (not account-tied).
+- Active concept / sidebar expansion driven by current route: URL is the
+  single source of truth. Do NOT duplicate "current concept" in a separate
+  state store — derive it from `useLocation()` / route params every time.
+- Chat messages: local component state inside ChatPanel/useChat, scoped to
+  the browser session only.
+- Search/command palette index: derived once from the registry at app load
+  (registry is static per build), no separate fetch/state needed.
+
+================================================================================
+12. SEARCH / COMMAND PALETTE [AGENT DISCRETION ON UI POLISH]
+================================================================================
+- Implement using `cmdk`, triggered via Cmd+K / Ctrl+K and a visible trigger
+  button in the header.
+- Index source: `flatConceptIndex` from the registry (title, section, tags,
+  summary, path).
+- Fuzzy match against title, tags, and summary.
+- Selecting a result navigates via React Router to that concept's route.
+- Group results by section in the palette UI, each group labeled with its
+  accent color dot for quick visual scanning.
+
+================================================================================
+13. ACCESSIBILITY & READABILITY RULES [LOCKED]
+================================================================================
+- All text/background pairs must meet at least WCAG AA (4.5:1 for body text,
+  3:1 for large text/UI elements) — the values specified in Section 6 already
+  satisfy this; do not substitute colors that weaken these ratios.
+- Never rely on accent color alone to convey state (e.g. "active" sidebar
+  item) — always pair with a secondary cue (bold weight, left border, icon
+  change) for colorblind users.
+- All interactive simulation controls must be keyboard-operable (Play/Pause/
+  Step/Reset reachable via Tab + Enter/Space, not mouse-only).
+- Respect `prefers-reduced-motion`: simulations and page transitions should
+  offer a reduced-motion fallback (instant state changes instead of animated
+  transitions) where feasible.
+
+================================================================================
+14. BUILD / DEPLOY NOTES
+================================================================================
+- `npm run dev` — Vite dev server, hot-reloads content folder changes.
+- `npm run build` — production build; content registry is baked in via the
+  glob scan at build time (import.meta.glob runs at build time for the
+  eager parts, and generates the lazy chunk map for the rest).
+- Deploy target: Vercel or Netlify. The `/api/chat.ts` function is picked up
+  automatically by either platform's serverless function convention — confirm
+  the exact folder convention required by whichever platform is chosen
+  (Vercel: `/api/*.ts` at repo root — already matches this spec's structure).
+- Environment variables required: `GEMINI_API_KEY` (server-side only, set in
+  the hosting platform's dashboard, never in a `.env` file committed to git).
+
+================================================================================
+15. NAMING & CODING CONVENTIONS
+================================================================================
+- Content folder names: kebab-case, matching the `id` field in their meta.json.
+- Component files: PascalCase.tsx
+- Hooks: camelCase, prefixed `use` (useChat.ts, useSidebarTree.ts)
+- CSS variables: kebab-case with `--` prefix, semantic naming (never
+  `--blue-500`, always `--accent-algorithms`).
+- All new shared UI primitives go in /components/ui and should be built as
+  thin wrappers around shadcn/Radix where possible, not reinvented.
+
+================================================================================
+16. WORKED EXAMPLE — ONE FULLY SPECIFIED CONCEPT
+================================================================================
+Path: /src/content/algorithms/graph/shortest-path/
+
+meta.json:
+{
+  "id": "shortest-path",
+  "title": "Shortest Path Algorithms",
+  "section": "algorithms",
+  "parentPath": "algorithms/graph",
+  "order": 1,
+  "difficulty": "intermediate",
+  "tags": ["graph", "greedy", "dijkstra", "bellman-ford", "shortest-path"],
+  "prerequisites": ["algorithms/graph/bfs-dfs"],
+  "summary": "Visualize how Dijkstra's and Bellman-Ford algorithms find the shortest path between nodes in a weighted graph.",
+  "accentSection": "algorithms"
+}
+
+Simulation.tsx (structural expectations, not full implementation):
+- Renders a graph canvas (React Flow or D3) with draggable weighted nodes/edges.
+- Toggle between "Dijkstra" and "Bellman-Ford" mode.
+- Uses <SimulationControls /> for play/pause/step/reset/speed.
+- Highlights the current node being processed, the frontier/queue, and the
+  finalized shortest-path tree, using `--accent-algorithms` for active-state
+  highlighting only (not for base graph elements).
+
+logic.mdx:
+- Explains the problem statement, walks through Dijkstra's greedy relaxation
+  step-by-step in prose, includes a pseudocode block (mono font), states time
+  complexity O((V+E) log V) with a binary heap, and notes Bellman-Ford's
+  O(VE) complexity and its advantage with negative weights.
+
+references.json:
+[
+  {
+    "title": "Dijkstra's Algorithm — CLRS Chapter 24",
+    "type": "book",
+    "source": "Introduction to Algorithms (CLRS)",
+    "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/",
+    "verified": true
+  },
+  {
+    "title": "Bellman-Ford Algorithm Explained",
+    "type": "video",
+    "source": "MIT OpenCourseWare",
+    "url": "https://ocw.mit.edu/",
+    "verified": true
+  }
+]
+
+================================================================================
+17. NON-GOALS / EXPLICIT CONSTRAINTS (DO NOT IMPLEMENT)
+================================================================================
+- No user authentication, accounts, or login flow of any kind.
+- No server-side database or persistent storage beyond the browser session.
+- No CMS or admin panel for managing content — content is managed purely by
+  adding/editing files in /src/content, by developers, via git.
+- No SSR/SSG — pure client-rendered SPA.
+- No second backend service beyond the single /api/chat.ts serverless
+  function.
+- Do not hardcode any color value outside of /src/styles/tokens.css.
+- Do not hardcode sidebar/navigation structure anywhere — it must always be
+  derived from the content registry.
+
+================================================================================
+END OF SPECIFICATION
+================================================================================
