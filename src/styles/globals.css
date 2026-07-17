@@ -49,3 +49,7 @@ input:focus-visible {
 .complexity-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 .complexity-grid > div { display: flex; flex-direction: column; gap: 0.35rem; }
 .complexity-value { font-family: var(--font-mono); font-size: 1.1rem; }
+
+@keyframes dash {
+  to { stroke-dashoffset: -40; }
+}
