@@ -1065,19 +1065,117 @@ proxy, matching every other backend touchpoint in this app.
 - No backend service beyond the three explicitly defined touchpoints:
   /api/chat.ts, /api/request-concept.ts, and the Simulate the Logic
   Cloudflare Worker (Section 19).
-- No live/production code execution or compilation of any kind. trace.json
+- No live/production code execution or compilation of any kind IN THE
+  CURRENT BUILD PHASES (this spec covers Phases 1–2 only). trace.json
   (Section 18) is always precomputed offline before it's committed; the
   Simulate the Logic page (Section 19) only ever produces constrained JSON
-  data, never executable code.
+  data, never executable code. This is a deliberate scope boundary, not a
+  permanent one — see Section 21 for the explicitly-deferred future option
+  and what would need to change to responsibly build it.
 - No auto-publish pipeline from concept requests to live content — the
   GitHub Issues flow (Section 17) is intake-only; publishing a requested
   concept remains a manual, git-based process like any other concept.
 - No Docker/Podman/container runtime dependency in the production deploy —
   that tooling (Section 18.7) is strictly a local, offline authoring aid,
-  never part of what ships or runs in production.
+  never part of what ships or runs in production, for Phases 1–2.
 - Do not hardcode any color value outside of /src/styles/tokens.css.
 - Do not hardcode sidebar/navigation structure anywhere — it must always be
   derived from the content registry.
+
+================================================================================
+21. PHASE 3 / FUTURE CONSIDERATION — LIVE CODE EXECUTION IN PRODUCTION
+    [NOT IN SCOPE FOR THE CURRENT BUILD — DOCUMENTED FOR FUTURE REFERENCE ONLY]
+================================================================================
+21.1 Status
+This section exists purely to record a deliberate tradeoff decision so it
+isn't relitigated from scratch later. Nothing in this section should be
+built as part of the current spec (Sections 1–20). It only becomes relevant
+if the team later decides live code execution needs to run in production
+rather than being precomputed offline (Section 18.6).
+
+The moment this stops being a "future consideration" and becomes real scope,
+this section should be rewritten as [LOCKED] with the same level of detail
+as Sections 17–19, not left as a loose sketch.
+
+21.2 The decision hinges on WHO submits the code — two different problems
+  Before building anything here, classify which scenario actually applies,
+  since they have almost nothing in common architecturally:
+
+  SCENARIO A — Trace generation stays limited to trusted content, just
+  triggered through the app instead of a developer's local machine
+    Example: an internal /admin tool where a content author pastes a
+    concept's code and the app generates trace.json for them, instead of
+    running OnlinePythonTutor/Docker locally per Section 18.7.
+    - Input is still only ever code the team itself wrote — same trust
+      level as the current offline workflow, just a UX convenience.
+    - Host the cokapi/Valgrind service as a small persistent container on
+      a platform that scales to zero when idle — Google Cloud Run, Fly.io,
+      or Railway are reasonable fits, keeping cost near-zero between
+      authoring sessions.
+    - Gate the trigger endpoint behind a shared secret header or IP
+      allowlist — full user auth is NOT required here, since this is an
+      internal tool, not a public-facing feature.
+    - Sandboxing needs are modest: basic CPU/memory/timeout limits are
+      sufficient, since the input is already trusted. Real adversarial
+      sandboxing (21.3) is not required for this scenario.
+    - This is the lower-risk, lower-effort of the two paths and could
+      reasonably be picked up as a Phase 3 item on its own, independent of
+      Scenario B.
+
+  SCENARIO B — End users submit or edit code that is then actually executed
+    Example: allowing a user to edit a concept's code inline and re-run it,
+    or wiring real execution into the Simulate the Logic page (Section 19)
+    instead of constrained AI-generated abstract data.
+    - Input is untrusted. This is a genuinely hard security problem, not a
+      feature to bolt on casually — treat it with the same seriousness as
+      any other user-facing execution surface.
+    - Serverless functions (Vercel/Netlify, as used everywhere else in this
+      app) are NOT suitable — they can't reliably run persistent processes
+      or spawn compilers/Valgrind, and their execution-time limits work
+      against this use case.
+    - Do NOT adapt OnlinePythonTutor's cokapi/Valgrind setup for this.
+      It was built for trusted educational/classroom use, not hardened for
+      public multi-tenant execution.
+    - Prefer purpose-built sandboxed execution engines that have already
+      solved the isolation problem: Judge0 or Piston (both open source,
+      both use OS-level isolation such as the `isolate` sandbox with
+      seccomp+cgroups). Note the tradeoff: both give final stdout, not a
+      step-by-step variable trace — matching Section 18's GDB-style trace
+      quality here would mean extending one of them, not using it as-is.
+    - For genuinely strong isolation, look at gVisor or Firecracker
+      microVMs (the technology underlying AWS Lambda and Fly.io's own
+      infrastructure) — each execution request gets a throwaway, network-
+      isolated, resource-capped sandbox destroyed immediately after use.
+
+21.3 Non-negotiable requirements IF Scenario B is ever built
+  - Strict per-request CPU, memory, and wall-clock time limits.
+  - No network egress from inside the execution sandbox.
+  - No persistent filesystem — sandbox is destroyed after each execution.
+  - Rate limiting per IP/session is the ONLY abuse lever available, since
+    this app has no user accounts (Section 20) — public code-execution
+    endpoints are a known target for cryptomining and denial-of-service
+    attempts, and this app has no login wall to fall back on.
+  - Reference point: Judge0 in its default configuration has had real
+    sandbox-escape vulnerabilities reported historically — this is cited
+    as a reminder that "just run it in a container" is not sufficient on
+    its own; proper isolation (seccomp/gVisor/Firecracker-class tooling)
+    is required, not optional hardening.
+
+21.4 Cost/infrastructure implications
+  Scenario B is a real departure from this app's near-zero-cost static-
+  hosting model (Section 2/Section 14). Budget and infrastructure ownership
+  should be explicitly revisited before starting this work — it is not a
+  drop-in addition to the existing Vercel/Netlify + Cloudflare Workers
+  setup.
+
+21.5 Recommendation
+  Do not build either scenario as part of the current spec. If/when
+  revisited: Scenario A is a reasonable, low-risk Phase 3 pickup on its own
+  (content-authoring convenience only). Scenario B should only be pursued
+  if there's a specific, validated product reason for users to run their
+  own code somewhere in the app — it is a meaningfully larger feature than
+  anything else currently in this document, both in engineering effort and
+  in ongoing security responsibility.
 
 ================================================================================
 END OF SPECIFICATION
