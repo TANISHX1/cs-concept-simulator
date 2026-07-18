@@ -1,0 +1,1 @@
+{"id":"memory-allocation","title":"Manual Memory Allocation","section":"languages","parentPath":"languages/c","order":1,"difficulty":"intermediate","tags":["c","malloc","free","memory","heap","allocation"],"prerequisites":[],"summary":"Visualize how malloc, calloc, realloc, and free manage heap memory in C programs.","accentSection":"languages"}

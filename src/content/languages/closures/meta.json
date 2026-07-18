@@ -1,1 +1,0 @@
-{"id":"closures","title":"Closures","section":"languages","parentPath":"languages","order":1,"difficulty":"intermediate","tags":["closure","scope","lexical","function","capture","higher-order"],"prerequisites":[],"summary":"See how a function retains access to variables from its outer scope even after the outer function returns.","accentSection":"languages"}

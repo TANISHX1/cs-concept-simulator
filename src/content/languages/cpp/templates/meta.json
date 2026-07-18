@@ -1,0 +1,1 @@
+{"id":"templates","title":"C++ Templates","section":"languages","parentPath":"languages/cpp","order":2,"difficulty":"intermediate","tags":["c++","templates","generics","compile-time","metaprogramming"],"prerequisites":[],"summary":"See how C++ templates generate type-safe code at compile time using type parameters and template specialization.","accentSection":"languages"}

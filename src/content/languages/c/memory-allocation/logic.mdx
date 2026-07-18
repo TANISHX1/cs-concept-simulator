@@ -1,0 +1,60 @@
+## What manual memory management solves
+
+C requires the programmer to explicitly allocate and free heap memory. This gives full control over when memory is reserved and released, matching the program's actual lifetime needs — essential for systems programming, embedded devices, and performance-critical code where garbage collection overhead is unacceptable.
+
+## Core idea
+
+Manual memory management works through four key functions that operate on the heap region of a process's address space. The programmer must track every allocation and ensure it is freed exactly once.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Explicit lifetime control</h3><p>Every allocation on the heap persists until the programmer explicitly deallocates it. The compiler does not insert automatic cleanup.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>Every malloc must be freed</h3><p>For every successful malloc / calloc / realloc call there must be exactly one matching free call. Too few = leak; too many = double-free.</p></section>
+</div>
+
+## Key functions
+
+| Function | Signature | Behaviour |
+|----------|-----------|-----------|
+| `malloc` | `void *malloc(size_t size)` | Allocates `size` bytes; contents uninitialized. |
+| `calloc` | `void *calloc(size_t num, size_t size)` | Allocates `num * size` bytes; zero-initializes. |
+| `realloc` | `void *realloc(void *ptr, size_t new_size)` | Resizes a previous allocation; may move data. |
+| `free` | `void free(void *ptr)` | Releases memory back to the heap. |
+
+## Pseudocode
+
+~~~c
+#include <stdlib.h>
+
+int *p = malloc(4 * sizeof(int));   // allocate 16 bytes on heap
+if (p == NULL) {
+    // handle allocation failure
+    return 1;
+}
+
+p[0] = 10;
+p[1] = 20;
+
+int *q = malloc(8 * sizeof(int));
+
+free(p);       // release p's memory
+p = NULL;      // nullify to prevent dangling access
+
+int *r = calloc(5, sizeof(int));     // zero-initialized
+r = realloc(r, 10 * sizeof(int));    // grow to 10 ints
+
+free(q);
+free(r);
+~~~
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">malloc (small)</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">amortized; freelist lookup or bump allocation</span></div><div><span className="complexity-label">free</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">returns block to freelist; coalescing may be O(n)</span></div><div><span className="complexity-label">realloc</span><strong className="complexity-value">O(n)</strong><span className="complexity-note">copy when block cannot grow in place</span></div><div><span className="complexity-label">Fragmentation</span><strong className="complexity-value">O(?)</strong><span className="complexity-note">external fragmentation depends on allocation pattern and allocator strategy</span></div></div>
+
+## Common pitfalls
+
+- **Dangling pointer**: using a pointer after the memory it points to has been freed.
+- **Double free**: calling `free` on the same pointer twice (undefined behaviour).
+- **Memory leak**: forgetting to call `free`; memory remains allocated until process exits.
+- **Use-after-free**: reading or writing through a freed pointer (often exploitable).
+- **Buffer overflow**: writing past the end of an allocated region (heap corruption).
+- **Not checking malloc return**: `malloc` can return `NULL` on failure.

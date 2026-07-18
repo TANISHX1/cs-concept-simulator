@@ -1,0 +1,95 @@
+## What the Collections Framework solves
+
+Before Java 1.2, developers had to implement their own data structures — arrays, linked lists, hash tables — leading to inconsistent, bug-prone code. The Collections Framework provides a unified set of reusable, well-tested interfaces and implementations with documented performance characteristics.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Standard interfaces + multiple implementations</h3><p>The framework defines core interfaces (`Collection`, `List`, `Set`, `Queue`, `Map`) and offers multiple implementations with different performance trade-offs. Code written against an interface works with any implementation.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>Choose by operation frequency</h3><p>No single collection is best for everything. `ArrayList` excels at random access; `LinkedList` at insertions in the middle; `HashSet` at fast membership checks; `TreeSet` at sorted traversal. Pick based on which operations dominate.</p></section>
+</div>
+
+## Core interfaces
+
+- **Collection&lt;E&gt;** — root interface; add, remove, contains, size, iterator.
+- **List&lt;E&gt;** — ordered, allows duplicates; positional access.
+- **Set&lt;E&gt;** — no duplicates; `HashSet` (hash table), `TreeSet` (sorted tree), `LinkedHashSet` (insertion order).
+- **Queue&lt;E&gt;** — FIFO or priority order; `LinkedList`, `PriorityQueue`.
+- **Map&lt;K,V&gt;** — key-value pairs; `HashMap`, `TreeMap`, `LinkedHashMap`.
+
+## ArrayList vs LinkedList
+
+| Feature | ArrayList | LinkedList |
+|---------|-----------|------------|
+| Internal | Resizable array | Doubly-linked list |
+| get(i) | O(1) | O(n) |
+| add(x) | O(1) amortized | O(1) |
+| insert(i,x) | O(n) shift | O(1) reroute |
+| Memory | Compact | Per-node overhead |
+
+## HashSet vs TreeSet
+
+| Feature | HashSet | TreeSet |
+|---------|---------|---------|
+| Order | Unordered | Sorted (natural/comparator) |
+| contains | O(1) | O(log n) |
+| add | O(1) | O(log n) |
+| Backed by | HashMap | Red-Black tree |
+| Requires | equals + hashCode | Comparable or Comparator |
+
+## Comparable vs Comparator
+
+- **Comparable**: `compareTo` defined inside the class (`String`, `Integer` implement it). Natural ordering.
+- **Comparator**: separate class or lambda. Useful when multiple orderings are needed or you cannot modify the class.
+
+## Iterator and Iterable
+
+`Iterable&lt;T&gt;` provides `iterator()` returning an `Iterator&lt;T&gt;`. The for-each loop (`for (T x : collection)`) compiles to iterator calls. Iterators are fail-fast — they throw `ConcurrentModificationException` if the collection is structurally modified during iteration.
+
+## Pseudocode
+
+```java
+// List — ordered, random access
+List<String> list = new ArrayList<>();
+list.add("apple");
+list.add("banana");
+String first = list.get(0);          // O(1)
+
+// Set — no duplicates, fast lookup
+Set<Integer> set = new HashSet<>();
+set.add(42);
+set.add(42);                          // ignored
+boolean has = set.contains(42);       // O(1)
+
+// Sorted Set — ordered traversal
+Set<String> sorted = new TreeSet<>();
+sorted.add("zebra");
+sorted.add("apple");
+// iteration: "apple", "zebra"
+
+// Map — key-value lookup
+Map<String, Integer> map = new HashMap<>();
+map.put("alice", 30);
+int age = map.get("alice");           // O(1)
+
+// Iteration (Iterator pattern)
+Iterator<String> it = list.iterator();
+while (it.hasNext()) {
+    String s = it.next();
+    System.out.println(s);
+}
+
+// Sorting with Comparator
+list.sort((a, b) -> b.compareTo(a)); // descending
+```
+
+## Complexity comparison
+
+<div className="complexity-grid"><div><span className="complexity-label">ArrayList get/set</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">direct array index access</span></div><div><span className="complexity-label">ArrayList add/remove at end</span><strong className="complexity-value">O(1)*</strong><span className="complexity-note">amortized constant; resizes O(n) occasionally</span></div><div><span className="complexity-label">ArrayList insert/remove at index</span><strong className="complexity-value">O(n)</strong><span className="complexity-note">shifts elements after the index</span></div><div><span className="complexity-label">LinkedList get</span><strong className="complexity-value">O(n)</strong><span className="complexity-note">must traverse from head or tail</span></div><div><span className="complexity-label">LinkedList add/remove in middle</span><span><strong className="complexity-value">O(1)</strong> <em>after node found</em></span><span className="complexity-note">pointer rewiring; finding node is O(n)</span></div><div><span className="complexity-label">HashSet/HashMap contains/put/get</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">hash function distributes evenly; O(n) worst-case with collisions</span></div><div><span className="complexity-label">TreeSet/TreeMap contains/put/get</span><strong className="complexity-value">O(log n)</strong><span className="complexity-note">Red-Black tree balanced traversal</span></div></div>
+
+## Common pitfalls
+
+- **ConcurrentModificationException**: modifying a collection while iterating over it (except via `Iterator.remove()`). Use `CopyOnWriteArrayList` or `ConcurrentHashMap` for concurrent access.
+- **equals/hashCode contract**: if you override `equals` in a class used with `HashSet` or `HashMap`, you must override `hashCode` consistently. Equal objects must have equal hash codes.
+- **Failing to specify initial capacity**: `HashMap` with default capacity (16) and load factor (0.75) resizes when it reaches 12 entries. For large datasets, provide initial capacity to avoid repeated resizing.
+- **Assuming ordering**: `HashSet` and `HashMap` make no guarantees about iteration order. Use `LinkedHashSet` / `LinkedHashMap` for insertion order or `TreeSet` / `TreeMap` for sorted order.
+- **Mutable keys in HashSet/HashMap**: if a key's `hashCode` changes after insertion, the set/map will behave incorrectly. Use immutable keys or re-insert after mutation.
+- **Raw types**: using `List` instead of `List&lt;String&gt;` bypasses compile-time type safety. Always parameterize collection types.

@@ -1,0 +1,1 @@
+{"id":"generics","title":"Java Generics","section":"languages","parentPath":"languages/java","order":1,"difficulty":"intermediate","tags":["java","generics","type-parameter","type-safety","erasure"],"prerequisites":[],"summary":"Understand how Java generics provide compile-time type safety with type parameters and the type erasure mechanism.","accentSection":"languages"}

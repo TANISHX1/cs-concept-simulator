@@ -1,0 +1,57 @@
+## What generators solve
+
+Eagerly computing and storing large (or infinite) sequences wastes memory and delays the first result. Generators produce values lazily — one at a time, on demand — so programs can handle streams of data that would not fit in memory.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Suspended execution (yield)</h3><p>A generator function pauses at each `yield` statement, saving its entire local state (variables, instruction pointer). The next call to `next()` resumes from the exact point where it paused.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>One value at a time</h3><p>Each call to `next()` produces exactly one value and then suspends. No value is computed before it is requested, and no memory is used for values not yet yielded.</p></section>
+</div>
+
+## How it works
+
+Calling a generator function returns a generator object — it does not execute any code. The generator object implements the iterator protocol (`__iter__` and `__next__`). Each call to `__next__` resumes execution until the next `yield`, at which point the yielded value is returned and the frame is suspended.
+
+## Pseudocode
+
+~~~python
+# Generator function
+def fibonacci():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+# Usage — lazy evaluation
+g = fibonacci()
+print(next(g))  # 0
+print(next(g))  # 1
+print(next(g))  # 1
+print(next(g))  # 2
+
+# For-loop integration — stops at StopIteration
+for x in fibonacci():
+    if x > 100:
+        break
+    print(x)
+~~~
+
+## Generator expressions
+
+~~~python
+# Generator expression — lazy, no list built
+squares = (x**2 for x in range(10_000_000))
+
+# Equivalent list comprehension — eager, ~80 MB list
+squares_list = [x**2 for x in range(10_000_000)]
+~~~
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">Memory per item</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">values are produced and consumed one at a time; no storage for the full sequence</span></div><div><span className="complexity-label">Generator state</span><strong className="complexity-value">O(frame)</strong><span className="complexity-note">a single generator frame holds local variables and instruction pointer</span></div><div><span className="complexity-label">Time per yield</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">constant cost to suspend and resume</span></div></div>
+
+## Common pitfalls
+
+- **Exhausting a generator**: generators can only be iterated once. After `StopIteration` is raised, the generator is spent. Call the function again to get a fresh generator.
+- **Mixing `yield` and `return`**: in Python 3, `return value` inside a generator raises `StopIteration(value)`, which is accessible via `StopIteration.value` or in a `for` loop's `else` clause — but it is *not* yielded as an element.
+- **Accidentally creating a list**: wrapping a generator in `list()` forces eager evaluation and defeats the purpose of lazy iteration.
+- **Generator expressions closing over loop variables**: like closures, generator expressions capture variables by reference, which can lead to surprising results if the variable changes between iterations.

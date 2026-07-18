@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Goroutines — Go Tour",
+    "type": "doc",
+    "source": "Go.dev",
+    "url": "https://go.dev/tour/concurrency/1",
+    "verified": true
+  },
+  {
+    "title": "Channels — Go Tour",
+    "type": "doc",
+    "source": "Go.dev",
+    "url": "https://go.dev/tour/concurrency/2",
+    "verified": true
+  }
+]

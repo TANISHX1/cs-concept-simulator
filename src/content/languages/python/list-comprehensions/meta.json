@@ -1,0 +1,12 @@
+{
+  "id": "list-comprehensions",
+  "title": "List Comprehensions",
+  "section": "languages",
+  "parentPath": "languages/python",
+  "order": 1,
+  "difficulty": "beginner",
+  "tags": ["python", "comprehension", "list", "functional", "iteration"],
+  "prerequisites": [],
+  "summary": "See how Python list comprehensions transform and filter sequences concisely using a declarative syntax.",
+  "accentSection": "languages"
+}

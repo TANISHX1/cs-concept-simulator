@@ -1,0 +1,66 @@
+## What decorators solve
+
+Cross-cutting concerns — logging, timing, access control, caching — must often be applied to many functions. Copy-pasting the same boilerplate into each function violates DRY and obscures the core logic. Decorators let you attach pre/post behavior declaratively.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Higher-order function wrapping</h3><p>A decorator is a function that takes a function as an argument and returns a new function that wraps the original. The `@` syntax is just syntactic sugar for `func = decorator(func)`.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>Original function is never modified</h3><p>Decorators compose *around* the original function without changing its internal code. The original is preserved in the closure of the wrapper.</p></section>
+</div>
+
+## How it works
+
+The `@decorator` syntax desugars to a simple assignment. When multiple decorators stack, they apply bottom-up: the closest decorator to the function definition is applied first.
+
+## Pseudocode
+
+~~~python
+# Decorator definition
+def log(func):
+    def wrapper(*args, **kwargs):
+        print(f"calling {func.__name__}")
+        result = func(*args, **kwargs)
+        print(f"{func.__name__} returned {result}")
+        return result
+    return wrapper
+
+# Usage with sugar
+@log
+def greet(name):
+    return f"Hello, {name}"
+
+# Desugared equivalent
+def greet(name):
+    return f"Hello, {name}"
+greet = log(greet)
+
+# Stacked decorators
+@timer
+@log
+def fetch_data():
+    ...
+# Equivalent to: fetch_data = timer(log(fetch_data))
+~~~
+
+## Using functools.wraps
+
+~~~python
+from functools import wraps
+
+def log(func):
+    @wraps(func)            # preserves __name__, __doc__, etc.
+    def wrapper(*args, **kwargs):
+        ...
+        return func(*args, **kwargs)
+    return wrapper
+~~~
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">Runtime overhead</span><strong className="complexity-value">O(1) per call</strong><span className="complexity-note">one extra function call per decorator layer</span></div><div><span className="complexity-label">Memory</span><strong className="complexity-value">O(d)</strong><span className="complexity-note">d = number of decorators, each creates a closure frame</span></div></div>
+
+## Common pitfalls
+
+- **Losing metadata**: without `@wraps`, the wrapper replaces `__name__` and `__doc__` of the original function, breaking introspection.
+- **Decorator argument confusion**: a decorator that takes arguments (`@deco(args)`) needs an extra nesting layer — it must return a decorator.
+- **Stacking order**: decorators apply bottom-up but execute top-down when the function is called — many beginners expect the reverse.
+- **Mutating global state in decorators**: side effects in decorators can cause surprising behavior during import time.

@@ -1,0 +1,84 @@
+## What polymorphism solves
+
+Polymorphism lets code written against a base type work with any derived type. The caller does not need to know the concrete type at compile time — the correct function is selected at runtime based on the actual object type. This enables frameworks, plugins, and extensible designs where new types can be added without modifying existing code.
+
+## Core idea
+
+Dynamic dispatch is implemented through a virtual table (vtable). Each class with virtual functions has a vtable — an array of function pointers. Each object contains a hidden vpointer (vptr) that points to its class's vtable. Calling a virtual function follows: object → vptr → vtable → function pointer → actual function.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>One interface, multiple implementations</h3><p>A base class defines the interface (virtual functions). Derived classes override those functions. Code operating on base pointers/references automatically calls the correct override.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>Every object knows its type</h3><p>Through the vptr, each polymorphic object carries runtime type information. The compiler generates the vtable layout; the constructor sets the vptr.</p></section>
+</div>
+
+## Pseudocode
+
+~~~c
+#include <iostream>
+
+class Shape {
+public:
+    virtual void draw() const = 0;  // pure virtual
+    virtual ~Shape() = default;     // virtual destructor
+};
+
+class Circle : public Shape {
+    double radius_;
+public:
+    explicit Circle(double r) : radius_(r) {}
+    void draw() const override {
+        std::cout << "Drawing a Circle\n";
+    }
+};
+
+class Square : public Shape {
+    double side_;
+public:
+    explicit Square(double s) : side_(s) {}
+    void draw() const override {
+        std::cout << "Drawing a Square\n";
+    }
+};
+
+void render(const Shape& s) {
+    s.draw();  // dynamic dispatch
+}
+
+int main() {
+    Circle c(5.0);
+    Square s(3.0);
+
+    Shape* shapes[2] = { &c, &s };
+    for (int i = 0; i < 2; i++) {
+        shapes[i]->draw();  // calls Circle::draw, then Square::draw
+    }
+}
+~~~
+
+## Memory layout
+
+For a class with virtual functions, the object layout is:
+
+```
+[ vptr | data member 1 | data member 2 | ... ]
+```
+
+Each class has one vtable (shared by all objects of that class). The vtable is an array of function pointers:
+
+```
+vtable for Circle:
+  [0] Circle::draw()      ← override of Shape::draw
+  [1] Circle::~Circle()   ← generated destructor
+  [2] Circle::~Circle()   ← deleting destructor
+```
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">Virtual call</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">two indirections: vptr → vtable → function address</span></div><div><span className="complexity-label">Memory per object</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">one vptr (typically 8 bytes on 64-bit), plus base class data</span></div><div><span className="complexity-label">vtable per class</span><strong className="complexity-value">O(v)</strong><span className="complexity-note">v = number of virtual functions (shared by all instances)</span></div></div>
+
+## Common pitfalls
+
+- **Slicing**: passing a derived object by value to a function taking a base parameter; the derived part is sliced off. Always pass by pointer or reference.
+- **Forgetting virtual destructor**: deleting a derived object through a base pointer with a non-virtual destructor is undefined behaviour.
+- **Calling virtual in constructor/destructor**: during construction (or destruction) the vptr points to the base class vtable, not the derived one. Virtual calls do not dispatch to overrides.
+- **Not using override**: forgetting the `override` specifier in derived classes means changes to the base class signature silently break the override.

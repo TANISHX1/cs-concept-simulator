@@ -1,0 +1,12 @@
+{
+  "id": "goroutines",
+  "title": "Goroutines & Channels",
+  "section": "languages",
+  "parentPath": "languages/go",
+  "order": 1,
+  "difficulty": "intermediate",
+  "tags": ["go", "goroutine", "channel", "concurrency", "select", "csp"],
+  "prerequisites": [],
+  "summary": "Visualize how Go goroutines run concurrently and communicate through channels using Communicating Sequential Processes.",
+  "accentSection": "languages"
+}

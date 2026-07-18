@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   SimulationControls,
   type SimulationSpeed,
-} from "../../../components/ui/SimulationControls";
+} from "../../../../components/ui/SimulationControls";
 
 type ScopeVar = {
   name: string;

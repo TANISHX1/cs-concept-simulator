@@ -1,0 +1,78 @@
+## What Go interfaces solve
+
+Object-oriented languages typically require explicit `implements` declarations, coupling types to interfaces at compile time. Go's structural typing means a type satisfies an interface automatically if it has the required methods — enabling polymorphism without class hierarchies or import dependencies.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Implicit satisfaction (duck typing at compile time)</h3><p>If a type has all the methods an interface requires, it satisfies the interface automatically — no explicit declaration needed. "If it walks like a duck and quacks like a duck, it is a duck."</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>Interface values are [type, value] pairs</h3><p>An interface variable stores two pointers: one to the concrete type's type information (for dynamic dispatch), and one to the concrete value. A nil interface has both pointers nil.</p></section>
+</div>
+
+## How it works
+
+An interface `I` with method set `M` is a protocol. Any concrete type `T` whose method set is a superset of `M` can be assigned to a variable of type `I`. The compiler checks this at compile time — no runtime type checking is needed for assignment.
+
+## Pseudocode
+
+~~~go
+// Interface definition
+type Stringer interface {
+    String() string
+}
+
+// Concrete types — no "implements" keyword needed
+type Book struct {
+    Title string
+}
+
+func (b Book) String() string {
+    return "Book: " + b.Title
+}
+
+type Person struct {
+    Name string
+}
+
+func (p Person) String() string {
+    return "Person: " + p.Name
+}
+
+// Interface value — holds dynamic type and value
+var s Stringer = Book{Title: "Go in Action"}
+fmt.Println(s.String()) // dynamic dispatch → Book.String()
+
+s = Person{Name: "Alice"}
+fmt.Println(s.String()) // dynamic dispatch → Person.String()
+
+// Type assertion
+book, ok := s.(Book)   // extract concrete type
+if ok {
+    fmt.Println(book.Title)
+}
+
+// Type switch
+switch v := s.(type) {
+case Book:
+    fmt.Println("book:", v.Title)
+case Person:
+    fmt.Println("person:", v.Name)
+default:
+    fmt.Println("unknown")
+}
+
+// Empty interface — can hold any value
+var any interface{}
+any = 42
+any = "hello"
+any = Book{}
+~~~
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">Interface value size</span><strong className="complexity-value">16 bytes</strong><span className="complexity-note">two pointers (type info + data) — on 64-bit systems</span></div><div><span className="complexity-label">Method dispatch</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">itable lookup at call site; compiled once per interface+concrete type pair</span></div><div><span className="complexity-label">Compile-time check</span><strong className="complexity-value">O(m)</strong><span className="complexity-note">m = number of methods in the interface; checked at assignment</span></div></div>
+
+## Common pitfalls
+
+- **Nil interface vs nil pointer**: a nil pointer of type `*Book` assigned to an `io.Writer` interface produces an interface with non-nil type info but nil data — checking `if writer == nil` returns false, causing surprising nil dereferences.
+- **Large interface definitions**: interfaces with many methods are hard to satisfy and violate the Go philosophy of small interfaces. Prefer many small interfaces (1-3 methods) over one large one.
+- **Interface pollution**: defining interfaces before they are needed, or for every struct, adds indirection without benefit. Let consumers define the interfaces they need (implicit satisfaction enables this).
+- **Value receiver vs pointer receiver**: a type with pointer-receiver methods may not satisfy an interface that expects value-receiver methods (though the converse works — the compiler auto-generates pointer-receiver methods for value receivers).

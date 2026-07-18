@@ -1,0 +1,54 @@
+## What goroutines solve
+
+Threads in most languages are heavyweight (MB-sized stacks, slow creation/context switching). Goroutines are user-space threads multiplexed onto OS threads — they start with a tiny stack (~4 KB) and are scheduled by Go's runtime, making it practical to launch hundreds of thousands of concurrent tasks.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Lightweight threads + CSP messaging</h3><p>Goroutines communicate by sending values through channels rather than sharing memory. "Do not communicate by sharing memory; instead, share memory by communicating." — Go proverb</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>Channels synchronize by default</h3><p>An unbuffered channel requires both a sender and a receiver to be ready — the send blocks until the receive completes, and vice versa. This provides happens-before synchronization without locks.</p></section>
+</div>
+
+## How it works
+
+The `go` keyword launches a new goroutine — it is not a function call but a concurrent execution unit scheduled by the Go runtime's M:N scheduler (M OS threads, N goroutines). Channels are typed conduits that connect goroutines.
+
+## Pseudocode
+
+~~~go
+// Unbuffered channel — synchronous
+ch := make(chan int)
+
+go func() {
+    result := doWork()
+    ch <- result // blocks until main receives
+}()
+
+value := <-ch // blocks until worker sends
+fmt.Println(value)
+
+// Buffered channel — asynchronous up to capacity
+bufCh := make(chan string, 3)
+bufCh <- "a" // does not block
+bufCh <- "b" // does not block
+bufCh <- "c" // does not block
+// bufCh <- "d" would block (buffer full)
+
+// Select — wait on multiple channel operations
+select {
+case v := <-ch:
+    fmt.Println("received:", v)
+case <-time.After(1 * time.Second):
+    fmt.Println("timeout")
+}
+~~~
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">Goroutine cost</span><strong className="complexity-value">~4 KB stack</strong><span className="complexity-note">grows/shrinks dynamically; millions of goroutines are feasible</span></div><div><span className="complexity-label">Channel send/recv</span><strong className="complexity-value">O(1) amortized</strong><span className="complexity-note">lock-free queue for buffered channels; runtime coordination for unbuffered</span></div><div><span className="complexity-label">M:N scheduling</span><strong className="complexity-value">O(log n)</strong><span className="complexity-note">work-stealing scheduler distributes goroutines across OS threads</span></div></div>
+
+## Common pitfalls
+
+- **Deadlock**: all goroutines are blocked waiting on each other. The runtime detects this and crashes with a stack trace, but only if the program is truly stuck.
+- **Goroutine leak**: a goroutine blocked on sending to a channel that nobody reads will never be garbage collected. Always ensure receivers exist.
+- **Closing channels**: sending on a closed channel panics. Receiving from a closed channel returns the zero value immediately (with `ok = false`).
+- **Nil channel**: reading from or writing to a nil channel blocks forever — useful in select statements to disable a case.
+- **Mutex vs channel**: not everything needs a channel. Use `sync.Mutex` for protecting simple shared state; use channels for signaling and data flow.

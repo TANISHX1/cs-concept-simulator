@@ -1,0 +1,77 @@
+## What generics solve
+
+Java generics provide compile-time type safety, eliminating the need for explicit casts when using collections and enabling reusable, type-parameterized algorithms. Without generics, collections operate on `Object`, forcing developers to cast on retrieval — a common source of `ClassCastException` at runtime.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Type parameters checked at compile time</h3><p>A generic class or method declares one or more type parameters (e.g. `Box&lt;T&gt;`). The compiler substitutes concrete type arguments (e.g. `Box&lt;String&gt;`) and verifies all operations are type-safe before producing bytecode.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>Erasure preserves backward compatibility</h3><p>At runtime, generic type information is erased to raw types or bounds (`Object` by default). This means `Box&lt;String&gt;` and `Box&lt;Integer&gt;` share the same runtime class — generics are a compile-time feature only.</p></section>
+</div>
+
+## Generic classes
+
+A generic class declares a type parameter in angle brackets after the class name. Inside the class body, `T` can be used as a field type, method return type, or parameter type.
+
+## Generic methods
+
+A generic method introduces its own type parameter (independent of the class parameter) before the return type. The compiler infers the type argument from the method arguments or the assignment target.
+
+## Bounded type parameters
+
+Use `&lt;T extends Bound&gt;` to constrain the type argument to a subtype of `Bound`. This lets the generic code call methods defined on `Bound` without casting.
+
+## Wildcards
+
+- `Collection&lt;? extends T&gt;` — producer; read items as `T`.
+- `Collection&lt;? super T&gt;` — consumer; write items of type `T`.
+- `Collection&lt;?&gt;` — unbounded wildcard; any type, read as `Object`.
+
+## Type erasure
+
+The compiler removes all type parameter information and replaces unbounded type parameters with `Object` (or the leftmost bound). Bridge methods are inserted to preserve polymorphism.
+
+## Pseudocode
+
+```java
+// Generic class with type parameter T
+class Box<T> {
+    private T value;
+
+    public void set(T value) { this.value = value; }
+    public T get()            { return value; }
+}
+
+// Instantiation — compiler checks types
+Box<String> stringBox = new Box<>();
+stringBox.set("Hello");
+String val = stringBox.get();     // no cast needed
+
+// Generic method
+static <U> U identity(U arg) {
+    return arg;
+}
+
+// Bounded type parameter
+static <T extends Comparable<T>> T max(T a, T b) {
+    return a.compareTo(b) > 0 ? a : b;
+}
+
+// After erasure (what the runtime sees):
+// class Box {
+//     private Object value;
+//     public void set(Object v) { ... }
+//     public Object get()      { ... }
+// }
+```
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">Compile-time overhead</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">type checking adds no runtime cost; erasure removes all generic info</span></div><div><span className="complexity-label">Runtime overhead</span><strong className="complexity-value">Zero</strong><span className="complexity-note">no boxing/unboxing beyond normal casts; no code generation per type</span></div><div><span className="complexity-label">Code size</span><strong className="complexity-value">Single class</strong><span className="complexity-note">one compiled class per generic definition, shared by all type arguments</span></div></div>
+
+## Common pitfalls
+
+- **Cannot instantiate `T`**: `new T()` is illegal because `T` is erased to `Object` at runtime with no guarantee of a no-arg constructor.
+- **Primitive type restrictions**: type arguments must be reference types. Use `Integer` for `int`, `Double` for `double`, etc. (auto-boxing helps but adds overhead).
+- **Heap pollution**: a variable of a parameterized type references an object that is not of that type (often caused by unchecked casts or raw types). Suppresses type safety.
+- **No generic arrays**: `new T[size]` is illegal; arrays are reified and retain component type at runtime, which is incompatible with erasure.
+- **Cannot overload methods with same erasure**: two methods whose parameterized types erase to the same raw signature cause a compile error.
+- **Static context blindness**: a static field of a generic class is shared across all type instantiations because the type parameter does not exist in static context.

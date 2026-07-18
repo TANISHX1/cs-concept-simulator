@@ -1,0 +1,52 @@
+## What list comprehensions solve
+
+Building a list by iterating over a sequence, filtering items, and transforming them typically requires a multi-line for-loop with an if-statement and calls to `.append()`. List comprehensions collapse this pattern into a single readable expression that is both more concise and often faster.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Declarative filtering + transformation</h3><p>A list comprehension describes *what* elements to collect — mapped through an expression and filtered by a condition — rather than *how* to loop, append, and branch imperatively.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>One element in, zero or one element out</h3><p>Every iteration of the source loop either produces exactly one output element (if the condition passes) or produces nothing (if it fails). The result length is always ≤ the input length.</p></section>
+</div>
+
+## How it works
+
+A list comprehension `[expr for item in iterable if condition]` is syntactic sugar that the Python compiler translates into a specialized loop with `LIST_APPEND` bytecodes — faster than manually calling `.append()` in a for-loop.
+
+## Pseudocode
+
+~~~python
+# List comprehension
+result = [x**2 for x in range(6) if x % 2 == 0]
+
+# Equivalent for-loop
+result = []
+for x in range(6):
+    if x % 2 == 0:
+        result.append(x**2)
+~~~
+
+## Nested comprehensions
+
+~~~python
+# Nested loops
+matrix = [[1, 2], [3, 4]]
+flattened = [item for row in matrix for item in row]
+# → [1, 2, 3, 4]
+
+# Dict comprehension
+squares = {x: x**2 for x in range(5)}
+# → {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}
+
+# Set comprehension
+evens_set = {x for x in range(10) if x % 2 == 0}
+# → {0, 2, 4, 6, 8}
+~~~
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">Time</span><strong className="complexity-value">O(n)</strong><span className="complexity-note">single pass over the input, each element processed once</span></div><div><span className="complexity-label">Space</span><strong className="complexity-value">O(k)</strong><span className="complexity-note">k ≤ n output elements are stored in a new list</span></div><div><span className="complexity-label">Overhead</span><strong className="complexity-value">lower than manual loop</strong><span className="complexity-note">dedicated LIST_APPEND bytecode, no attribute lookup for .append</span></div></div>
+
+## Common pitfalls
+
+- **Overly complex comprehensions**: nesting three or more loops or conditions inside a comprehension hurts readability — use a regular for-loop instead.
+- **List vs generator**: a list comprehension builds the entire list in memory; use a generator expression `(expr for item in iterable)` for lazy evaluation.
+- **Confusing assignment with walrus operator**: `[x := f(y) for y in items]` mutates the loop variable in the enclosing scope.

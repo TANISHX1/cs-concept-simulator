@@ -1,0 +1,12 @@
+{
+  "id": "interfaces",
+  "title": "Go Interfaces",
+  "section": "languages",
+  "parentPath": "languages/go",
+  "order": 2,
+  "difficulty": "intermediate",
+  "tags": ["go", "interface", "structural-typing", "implicit", "satisfaction"],
+  "prerequisites": ["languages/go/goroutines"],
+  "summary": "See how Go's structural typing lets types satisfy interfaces implicitly without explicit declaration.",
+  "accentSection": "languages"
+}

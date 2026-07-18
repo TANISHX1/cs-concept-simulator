@@ -1,0 +1,76 @@
+## What function pointers solve
+
+Functions are blocks of machine code stored at a specific address. A function pointer stores that address, allowing code to be treated as data — passed as arguments, stored in arrays, or swapped at runtime. This enables callbacks, dispatch tables, and runtime polymorphism in C.
+
+## Core idea
+
+A function pointer is a variable that holds the memory address of a function's entry point. Calling through a pointer invokes the function at that address, adding one level of indirection.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Code as data</h3><p>Functions reside at addresses in the code segment. A function pointer is just a typed address — it tells the CPU where to jump.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>Signature must match</h3><p>The function pointer's type encodes the return type and parameter types. Assigning a function with a different signature is undefined behaviour.</p></section>
+</div>
+
+## Syntax
+
+~~~c
+// declaration: ptr to function taking two ints, returning int
+int (*op)(int, int);
+
+// assignment
+op = &add;   // & is optional — function name decays to pointer
+
+// calling
+int result = op(3, 4);
+
+// typedef for readability
+typedef int (*BinaryOp)(int, int);
+BinaryOp op2 = &subtract;
+~~~
+
+## Callback pattern
+
+~~~c
+void sort(int *arr, size_t n, int (*compare)(int, int)) {
+    for (size_t i = 0; i < n; i++) {
+        for (size_t j = i + 1; j < n; j++) {
+            if (compare(arr[i], arr[j]) > 0) {
+                int tmp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = tmp;
+            }
+        }
+    }
+}
+
+int ascending(int a, int b) { return a - b; }
+int descending(int a, int b) { return b - a; }
+
+// usage
+sort(data, count, ascending);
+sort(data, count, descending);
+~~~
+
+## Dispatch table
+
+~~~c
+typedef int (*Operation)(int, int);
+
+Operation ops[3] = { add, subtract, multiply };
+
+int a = 10, b = 3;
+for (int i = 0; i < 3; i++) {
+    printf("%d\n", ops[i](a, b));
+}
+~~~
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">Call</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">extra indirection vs direct call; one pointer dereference</span></div><div><span className="complexity-label">Table dispatch</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">array index + indirect call</span></div></div>
+
+## Common pitfalls
+
+- **Wrong signature**: assigning a function whose parameter or return types mismatch the pointer type.
+- **Null pointer call**: calling through a function pointer set to NULL (segfault).
+- **Missing parentheses**: `op` vs `op()` — the former is the address, the latter is a call.
+- **Casting**: converting between incompatible function pointer types is undefined behaviour (POSIX allows casting to `void *` for dlsym but this is not standard C).

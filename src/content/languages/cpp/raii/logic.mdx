@@ -1,0 +1,58 @@
+## What RAII solves
+
+Exception safety and resource leaks. In C++ a function may exit via `return`, an uncaught exception, or early `goto`. Without RAII every exit point must manually release resources — a fragile, error-prone pattern. RAII guarantees that resource cleanup happens automatically when an object goes out of scope, regardless of how the scope is exited.
+
+## Core idea
+
+Resource Acquisition Is Initialization: acquire the resource in the constructor, release it in the destructor. The C++ language guarantees that destructors run when objects exit scope (including during stack unwinding from exceptions).
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Scope-bound lifetime</h3><p>Constructor acquires; destructor releases. The compiler inserts destructor calls at every scope exit automatically.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>No resource without owner</h3><p>Every heap resource is owned by a stack-allocated RAII object. When the owner dies, the resource dies with it.</p></section>
+</div>
+
+## Smart pointer types
+
+| Type | Ownership | Overhead | Copyable |
+|------|-----------|----------|----------|
+| `unique_ptr<T>` | Exclusive | Zero (same as raw pointer) | No (move only) |
+| `shared_ptr<T>` | Shared (ref counted) | Atomic ref count + control block | Yes (increments count) |
+| `weak_ptr<T>` | Observing | None (no ref count increment) | Yes (locks to shared) |
+
+## Pseudocode
+
+~~~c
+#include <memory>
+
+// RAII wrapper ensures free() on scope exit
+class FileHandle {
+    FILE *fp_;
+public:
+    FileHandle(const char *path, const char *mode)
+        : fp_(fopen(path, mode)) { }
+    ~FileHandle() { if (fp_) fclose(fp_); }
+    // ... no copy, move semantics
+};
+
+// unique_ptr — exclusive ownership
+std::unique_ptr<int> p = std::make_unique<int>(42);
+auto p2 = std::move(p);   // ownership transfers; p becomes null
+
+// shared_ptr — shared ownership
+std::shared_ptr<int> sp = std::make_shared<int>(10);
+{
+    auto sp2 = sp;        // ref count becomes 2
+}                         // sp2 destructor: ref count becomes 1
+sp.reset();               // ref count becomes 0 → heap freed
+~~~
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">unique_ptr</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">zero overhead over raw pointer; no runtime cost</span></div><div><span className="complexity-label">shared_ptr ctor</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">allocates control block; atomic ref count increment</span></div><div><span className="complexity-label">shared_ptr copy</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">atomic increment of ref count</span></div><div><span className="complexity-label">shared_ptr dtor</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">atomic decrement; conditional delete when count reaches 0</span></div></div>
+
+## Common pitfalls
+
+- **Cyclic references**: two `shared_ptr` objects referencing each other creates a reference cycle where neither is freed. Use `weak_ptr` to break cycles.
+- **Forgetting move for unique_ptr**: trying to copy a `unique_ptr` is a compile error. Use `std::move` to transfer ownership.
+- **shared_ptr performance**: atomic ref count operations are not free; for thread-local ownership prefer `unique_ptr`.
+- **Array deletion**: `unique_ptr<T[]>` for arrays; a default `unique_ptr<T>` calls `delete`, not `delete[]`.

@@ -1,0 +1,76 @@
+## What templates solve
+
+C++ templates enable generic programming — writing functions and classes that work with any type without sacrificing performance. The compiler generates specialised code for each set of template arguments at compile time, resulting in zero-cost abstraction: the generated code is as efficient as hand-written type-specific code.
+
+## Core idea
+
+A template is a blueprint. The compiler takes the template and substitutes concrete types (or values) to produce actual functions or classes. This is purely a compile-time mechanism — no runtime overhead, no type erasure, no boxing.
+
+<div className="logic-grid">
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Core idea</span><h3>Compile-time code generation</h3><p>Templates are expanded by the compiler before code generation. Each distinct set of template arguments produces a separate instantiation with concrete types baked in.</p></section>
+  <section className="logic-card"><span className="logic-eyebrow" style={{ color: "var(--accent-languages)" }}>Invariant</span><h3>All types known at compile time</h3><p>Every template instantiation must be fully resolved during compilation. No runtime type information is used for dispatch — the correct function is baked into the binary.</p></section>
+</div>
+
+## Function templates
+
+~~~c
+template <typename T>
+T max(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+// explicit instantiation
+int m1 = max<int>(3, 7);
+
+// implicit deduction
+double m2 = max(3.14, 2.72);
+~~~
+
+## Class templates
+
+~~~c
+template <typename T, int N>
+struct Array {
+    T data[N];
+
+    T& operator[](int index) { return data[index]; }
+    int size() const { return N; }
+};
+
+Array<int, 5> arr;
+arr[0] = 10;
+~~~
+
+## Template specialization
+
+~~~c
+// primary template
+template <typename T, int N>
+struct Array { T data[N]; };
+
+// full specialization for bool, 0
+template <>
+struct Array<bool, 0> {
+    // zero-size — no storage needed
+    int size() const { return 0; }
+};
+~~~
+
+## Template parameters
+
+| Kind | Example | Description |
+|------|---------|-------------|
+| Type | `typename T` | Any type |
+| Non-type | `int N` | Integral, pointer, or enum value |
+| Template-template | `template<typename> class Container` | Another template |
+
+## Complexity
+
+<div className="complexity-grid"><div><span className="complexity-label">Compile time</span><strong className="complexity-value">O(k)</strong><span className="complexity-note">k = number of instantiations; each adds work for the compiler</span></div><div><span className="complexity-label">Runtime</span><strong className="complexity-value">O(1)</strong><span className="complexity-note">zero overhead — instantiated code is identical to hand-written</span></div><div><span className="complexity-label">Binary size</span><strong className="complexity-value">O(k)</strong><span className="complexity-note">each instantiation produces separate machine code (code bloat)</span></div></div>
+
+## Common pitfalls
+
+- **Code bloat**: each distinct set of template arguments generates separate code. Many instantiations can increase binary size significantly.
+- **Complex error messages**: template errors often produce multi-kilobyte compiler output due to deeply nested instantiations.
+- **SFINAE complexity**: Substitution Failure Is Not An Error enables advanced compile-time introspection but can be hard to read and debug.
+- **Definition in header**: template definitions must be visible at the point of instantiation, so they typically live in header files (not `.cpp` files).

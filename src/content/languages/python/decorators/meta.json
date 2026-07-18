@@ -1,0 +1,12 @@
+{
+  "id": "decorators",
+  "title": "Decorators",
+  "section": "languages",
+  "parentPath": "languages/python",
+  "order": 2,
+  "difficulty": "intermediate",
+  "tags": ["python", "decorator", "higher-order", "metaprogramming", "wrapper"],
+  "prerequisites": ["languages/python/list-comprehensions"],
+  "summary": "Watch how Python decorators wrap functions to extend behavior without modifying the original code.",
+  "accentSection": "languages"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "generators",
+  "title": "Generators & Yield",
+  "section": "languages",
+  "parentPath": "languages/python",
+  "order": 3,
+  "difficulty": "intermediate",
+  "tags": ["python", "generator", "yield", "iterator", "lazy", "coroutine"],
+  "prerequisites": ["languages/python/list-comprehensions"],
+  "summary": "Trace how Python generator functions pause execution with yield and resume lazily producing values one at a time.",
+  "accentSection": "languages"
+}

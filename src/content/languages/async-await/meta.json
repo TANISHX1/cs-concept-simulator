@@ -1,1 +1,0 @@
-{"id":"async-await","title":"Async / Await","section":"languages","parentPath":"languages","order":2,"difficulty":"intermediate","tags":["async","await","promise","event-loop","concurrency"],"prerequisites":["languages/closures"],"summary":"Trace how async functions yield control, resolve promises, and resume execution via the event loop.","accentSection":"languages"}
