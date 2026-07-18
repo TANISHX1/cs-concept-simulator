@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Pause, Play, RotateCcw, SkipBack, SkipForward } from "lucide-react";
+import {
+  SimulationControls,
+  type SimulationSpeed,
+} from "../../../../components/ui/SimulationControls";
+
 const source = [8, 3, 6, 2, 7, 4, 1, 5];
+
 export default function MergeSortSimulation() {
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState<SimulationSpeed>(1);
+
   useEffect(() => {
     if (!playing) return;
     const id = setInterval(
@@ -16,10 +23,11 @@ export default function MergeSortSimulation() {
           }
           return s + 1;
         }),
-      650,
+      650 / speed,
     );
     return () => clearInterval(id);
-  }, [playing]);
+  }, [playing, speed]);
+
   const values = useMemo(
     () =>
       source
@@ -53,39 +61,22 @@ export default function MergeSortSimulation() {
           </motion.div>
         ))}
       </div>
-      <div className="mt-5 flex items-center gap-2">
-        <button
-          aria-label="Step back"
-          onClick={() => setStep((s) => Math.max(0, s - 1))}
-          className="rounded-lg border border-border p-2 text-muted hover:bg-surface-hover"
-        >
-          <SkipBack size={16} />
-        </button>
-        <button
-          aria-label={playing ? "Pause" : "Play"}
-          onClick={() => setPlaying((p) => !p)}
-          className="rounded-lg bg-foreground p-2 text-background"
-        >
-          {playing ? <Pause size={16} /> : <Play size={16} />}
-        </button>
-        <button
-          aria-label="Step forward"
-          onClick={() => setStep((s) => Math.min(source.length, s + 1))}
-          className="rounded-lg border border-border p-2 text-muted hover:bg-surface-hover"
-        >
-          <SkipForward size={16} />
-        </button>
-        <button
-          aria-label="Reset"
-          onClick={() => {
-            setStep(0);
-            setPlaying(false);
-          }}
-          className="ml-auto rounded-lg border border-border p-2 text-muted hover:bg-surface-hover"
-        >
-          <RotateCcw size={16} />
-        </button>
-      </div>
+      <SimulationControls
+        isPlaying={playing}
+        speed={speed}
+        canStepBack={step > 0}
+        canStepForward={step < source.length}
+        onPlayPause={() => setPlaying((current) => !current)}
+        onStepBack={() => setStep((current) => Math.max(0, current - 1))}
+        onStepForward={() =>
+          setStep((current) => Math.min(source.length, current + 1))
+        }
+        onReset={() => {
+          setStep(0);
+          setPlaying(false);
+        }}
+        onSpeedChange={setSpeed}
+      />
     </div>
   );
 }

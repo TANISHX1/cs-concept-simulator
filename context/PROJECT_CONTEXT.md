@@ -87,6 +87,8 @@ meta.json contains id, title, section, parentPath, order, difficulty, tags, prer
 
 Simulation.tsx must default-export a standalone React component. It owns its state, uses theme tokens, and keeps controls keyboard accessible.
 
+All standard concept controls are global: use SimulationControls from src/components/ui/SimulationControls.tsx. Do not create per-concept Play, Pause, Step, Reset, or Speed control bars. The shared component owns the consistent UI; each concept supplies controlled state and callbacks.
+
 logic.mdx should be structured, not a wall of text. Use dedicated sections for the concept/problem, core idea or invariant, algorithm steps, C-style pseudocode, time and space complexity, and common pitfalls.
 
 Inline React components are acceptable when MDX parsing remains stable. For complex colored code, prefer a dedicated .tsx component imported explicitly with its .tsx extension.
