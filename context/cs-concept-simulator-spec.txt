@@ -55,8 +55,8 @@ Core requirements:
   concept type (see Section 10 for the mapping).
 - Content authoring format: MDX (for logic write-ups that may embed live
   React components inline).
-- AI chat backend: ONE serverless function (see Section 9). Provider: Google
-  Gemini API. The API key lives ONLY in the serverless function's environment
+- AI chat backend: ONE serverless function (see Section 9). Provider: an
+  OpenAI-compatible API endpoint selected by server-side configuration. The API key lives ONLY in the serverless function's environment
   variables — it must NEVER be shipped to or callable from client-side code.
 - Icons: Lucide React.
 - Fonts: Inter or Geist for UI text; JetBrains Mono or IBM Plex Mono for code/
@@ -75,7 +75,7 @@ Core requirements:
   to an LLM with a constrained JSON output schema. Full spec in Section 19.
 
 2.1 Serverless functions overview (all live under /api, all deploy together)
-  /api/chat.ts               — AI chat panel proxy (Gemini). See Section 9.
+  /api/chat.ts               — AI chat panel proxy. See Section 9.
   /api/request-concept.ts    — Concept request form -> GitHub Issues. Section 17.
   /api/simulate-logic.ts     — Beta "Simulate the Logic" page proxy (may be
                                 implemented as a Cloudflare Worker instead of
@@ -197,7 +197,7 @@ Explicitly OUT of scope / do not add:
         globals.css               — Tailwind base + global resets
     main.tsx                      — app entry point
   /api
-      chat.ts                     — AI chat panel proxy (Gemini). Section 9.
+      chat.ts                     — AI chat panel proxy. Section 9.
       request-concept.ts          — Concept request -> GitHub Issues. Section 17.
   /workers
       simulate-logic-worker.ts    — Cloudflare Worker for Beta "Simulate the
@@ -550,16 +550,13 @@ MainContent as the primary view on small screens.
 - Single file, deployed as a Vercel/Netlify serverless function alongside
   the static SPA build (same repo, same deploy).
 - Responsibilities:
-    1. Receive POST request with { message: string, context: string,
-       history: {role: string, content: string}[] }
-    2. Read GEMINI_API_KEY from environment variables (server-side only,
+    1. Receive POST request with { messages: UIMessage[] } from the AI SDK.
+    2. Read AI_BASE_URL, AI_MODEL, and AI_API_KEY from environment variables (server-side only,
        set in Vercel/Netlify project settings — never committed to repo,
        never exposed in any client bundle).
-    3. Construct request to Google Gemini API, injecting `context` (the
-       current concept's logic.mdx content + meta.json title/summary) into
-       the system/instruction portion of the prompt so answers are grounded
-       in what the user is currently viewing.
-    4. Forward the model's response back to the client as JSON.
+    3. Convert UI messages to model messages and stream through the
+       Vercel AI SDK.
+    4. Return the UI message stream response to the client.
     5. Handle errors gracefully (rate limits, malformed input) and return
        clean error responses — never leak the API key or raw provider error
        internals to the client.
@@ -569,16 +566,9 @@ MainContent as the primary view on small screens.
 9.2 Client-side — features/chat/
 - ChatPanel.tsx: renders message list + input box + send button, matches
   card-style compact layout described in Section 7.
-- useChat.ts hook: manages local message state, calls lib/api.ts's
-  `sendChatMessage()` which POSTs to `/api/chat`, handles loading/streaming
-  state (streaming is [AGENT DISCRETION] — simple request/response is
-  acceptable for v1; can upgrade to streamed tokens later without changing
-  the architecture).
-- Context injection: Workspace.tsx (or a shared context provider) tracks
-  "currently active concept," and ChatPanel reads that to include the right
-  context string with each message sent — this must update automatically as
-  the user navigates concepts, without the user having to re-explain what
-  they're looking at.
+- @ai-sdk/react's useChat hook manages UI messages and streaming state while
+  POSTing to `/api/chat`.
+- No additional concept context is injected in this baseline chat flow.
 - No chat history is persisted beyond the browser session/tab lifetime (no
   auth, no backend storage — by design).
 
@@ -667,7 +657,8 @@ All simulations must consume theme CSS variables for every color used
   automatically by either platform's serverless function convention — confirm
   the exact folder convention required by whichever platform is chosen
   (Vercel: `/api/*.ts` at repo root — already matches this spec's structure).
-- Environment variables required: `GEMINI_API_KEY` (server-side only, set in
+- Environment variables required: `AI_BASE_URL`, `AI_MODEL`, and `AI_API_KEY`
+  (server-side only, set in
   the hosting platform's dashboard, never in a `.env` file committed to git).
 
 ================================================================================

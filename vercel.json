@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "vite --port $PORT",
+  "rewrites": [
+    {
+      "source": "/workspace/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}

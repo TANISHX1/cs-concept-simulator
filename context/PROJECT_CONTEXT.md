@@ -131,7 +131,7 @@ api/chat.ts            single serverless chat endpoint
 
 ## AI/API status
 
-api/chat.ts validates the request method and message, checks GEMINI_API_KEY, and currently returns a safe pending-adapter response. The Gemini request/response integration still needs to be implemented before deployment as a functional AI service.
+api/chat.ts accepts AI SDK UI messages, reads the server-only AI_BASE_URL, AI_MODEL, and AI_API_KEY configuration, and streams through the Vercel AI SDK.
 
 The key must remain server-side and must never be imported into the client bundle.
 

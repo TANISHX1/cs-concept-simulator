@@ -44,6 +44,6 @@ The registry, sidebar, routes, overview cards, and search index are derived auto
 
 ## Deployment
 
-Deploy the static Vite app to Vercel or Netlify. The future Gemini proxy reads GEMINI_API_KEY only from server-side environment variables. Never commit API keys.
+Deploy the static Vite app to Vercel. The API routes read `AI_BASE_URL`, `AI_MODEL`, and `AI_API_KEY` only from server-side environment variables. Never commit API keys.
 
 See context/PROJECT_CONTEXT.md for the complete implementation context and working conventions.
