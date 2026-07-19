@@ -1,0 +1,25 @@
+{
+  "title": "Quick Sort: Partition Around a Pivot",
+  "visualType": "array",
+  "initialState": [7, 2, 9, 4, 3, 8, 1, 5],
+  "steps": [
+    { "type": "HIGHLIGHT", "indices": [7] },
+    { "type": "COMPARE", "indices": [0, 7] },
+    { "type": "COMPARE", "indices": [1, 7] },
+    { "type": "SWAP", "indices": [0, 1] },
+    { "type": "COMPARE", "indices": [2, 7] },
+    { "type": "COMPARE", "indices": [3, 7] },
+    { "type": "SWAP", "indices": [2, 3] },
+    { "type": "SWAP", "indices": [3, 7] },
+    { "type": "HIGHLIGHT", "indices": [0, 1, 2, 3] }
+  ],
+  "pseudocode": "void quickSort(int arr[], int low, int high) {\n  if (low < high) {\n    int pivot = partition(arr, low, high);\n    quickSort(arr, low, pivot - 1);\n    quickSort(arr, pivot + 1, high);\n  }\n}",
+  "complexity": {
+    "time": "O(n log n) average, O(n^2) worst",
+    "space": "O(log n) average"
+  },
+  "pitfalls": [
+    "Consistently choose and compare against the pivot.",
+    "Poor pivot choices can create unbalanced partitions."
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "title": "Merge Sort: Divide and Merge",
+  "visualType": "array",
+  "initialState": [8, 3, 6, 2, 7, 1, 5, 4],
+  "steps": [
+    { "type": "HIGHLIGHT", "indices": [0, 1, 2, 3] },
+    { "type": "HIGHLIGHT", "indices": [4, 5, 6, 7] },
+    { "type": "COMPARE", "indices": [0, 1] },
+    { "type": "SWAP", "indices": [0, 1] },
+    { "type": "COMPARE", "indices": [2, 3] },
+    { "type": "SWAP", "indices": [2, 3] },
+    { "type": "COMPARE", "indices": [4, 5] },
+    { "type": "SWAP", "indices": [4, 5] },
+    { "type": "HIGHLIGHT", "indices": [0, 1, 2, 3, 4, 5, 6, 7] }
+  ],
+  "pseudocode": "void mergeSort(int arr[], int left, int right) {\n  if (left >= right) return;\n  int mid = left + (right - left) / 2;\n  mergeSort(arr, left, mid);\n  mergeSort(arr, mid + 1, right);\n  merge(arr, left, mid, right);\n}",
+  "complexity": {
+    "time": "O(n log n)",
+    "space": "O(n)"
+  },
+  "pitfalls": [
+    "Merge boundaries must not overlap or skip an element.",
+    "The auxiliary merge buffer uses linear extra space."
+  ]
+}

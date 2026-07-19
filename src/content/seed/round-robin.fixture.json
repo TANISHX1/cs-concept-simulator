@@ -1,0 +1,24 @@
+{
+  "title": "Round-Robin Scheduling: Time Quantum",
+  "visualType": "array",
+  "initialState": [5, 3, 7, 2],
+  "steps": [
+    { "type": "HIGHLIGHT", "indices": [0] },
+    { "type": "COMPARE", "indices": [0, 1] },
+    { "type": "HIGHLIGHT", "indices": [1] },
+    { "type": "COMPARE", "indices": [1, 2] },
+    { "type": "HIGHLIGHT", "indices": [2] },
+    { "type": "COMPARE", "indices": [2, 3] },
+    { "type": "HIGHLIGHT", "indices": [3] },
+    { "type": "HIGHLIGHT", "indices": [0, 1, 2, 3] }
+  ],
+  "pseudocode": "void roundRobin(Queue ready, int quantum) {\n  while (!ready.empty()) {\n    Process p = ready.dequeue();\n    run(p, quantum);\n    if (!p.finished()) ready.enqueue(p);\n  }\n}",
+  "complexity": {
+    "time": "O(total time quanta)",
+    "space": "O(number of processes)"
+  },
+  "pitfalls": [
+    "A very small quantum increases context-switch overhead.",
+    "A very large quantum behaves like first-come, first-served scheduling."
+  ]
+}
