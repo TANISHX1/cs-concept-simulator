@@ -199,12 +199,12 @@ export function ChatPanel({
           <Bot size={15} />
         </span>
         <div>
-          <p className="text-sm font-medium">Concept copilot</p>
+          <p className="text-sm font-medium">Trace Kernel Copilot</p>
           <p className="text-[11px] text-muted">Context-aware learning help</p>
         </div>
         <button
           type="button"
-          aria-label="Close concept copilot"
+          aria-label="Close Trace Kernel Copilot"
           onClick={onClose}
           className="ml-auto rounded-md p-1 text-muted transition hover:bg-surface-hover hover:text-foreground"
         >
@@ -269,7 +269,7 @@ export function ChatPanel({
             <span className="copilot-thinking-dot h-1.5 w-1.5 rounded-full bg-muted" />
             <span className="copilot-thinking-dot h-1.5 w-1.5 rounded-full bg-muted" />
             <span className="copilot-thinking-dot h-1.5 w-1.5 rounded-full bg-muted" />
-            <span className="sr-only">Copilot is thinking…</span>
+            <span className="sr-only">Trace Kernel Copilot is thinking…</span>
           </div>
         )}
         {(error || modificationError) && (
@@ -290,7 +290,7 @@ export function ChatPanel({
             />
             <p className="flex-1">
               {error
-                ? "Copilot unavailable — check your API key in settings."
+                ? "Trace Kernel Copilot unavailable — check your API key in settings."
                 : modificationError}
             </p>
             <button
@@ -300,7 +300,7 @@ export function ChatPanel({
                 setModificationError(null);
               }}
               className="rounded p-0.5 text-muted transition hover:bg-surface-hover hover:text-foreground"
-              aria-label="Dismiss Copilot error"
+              aria-label="Dismiss Trace Kernel Copilot error"
             >
               <X size={15} />
             </button>

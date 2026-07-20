@@ -1,4 +1,4 @@
-# CS Concept Simulator — Master Project Context & Specification
+# Trace Kernel — Master Project Context & Specification
 
 > **Document Purpose:** Source of truth for the AI build agent (Codex). This document dictates product decisions, implementation details, visual rules, strict technical constraints, and the step-by-step phased roadmap. Do not deviate from these rules without explicit instruction.
 
@@ -6,7 +6,7 @@
 
 ## 1. Project Purpose & Paradigm Shift
 
-**The CS Concept Simulator** is a strictly client-rendered educational workspace that makes computer science concepts tangible through visual simulations, structured MDX explanations, and C-style pseudocode.
+**Trace Kernel** is a strictly client-rendered educational workspace that makes computer science concepts tangible through visual simulations, structured MDX explanations, and C-style pseudocode.
 
 **The Paradigm Shift (Static → Generative):** The platform operates as an AI-native generative learning platform. If a user asks for a concept that isn't pre-authored in the library, the app generates the simulation, pseudocode, and explanation on the fly using OpenAI structured JSON outputs. Generated content is immediately treated as a native part of the app.
 

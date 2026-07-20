@@ -1,4 +1,4 @@
-# Rebuild Plan — AI Core of CS Concept Simulator
+# Rebuild Plan — AI Core of Trace Kernel
 
 > **Status:** Approved by user on 2026-07-19. Ready for execution.
 > **Scope:** Five in-scope pieces + two enablers. No edits made yet to source — this document is the source of truth for the rebuild.

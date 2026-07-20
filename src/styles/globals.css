@@ -147,60 +147,102 @@ input:focus-visible {
   }
 }
 
-/* Landing-only layer: the CSS field is also the no-WebGL/reduced-motion fallback. */
-.landing-topology-base {
-  background:
-    radial-gradient(
-      circle at 78% 47%,
-      color-mix(in oklab, var(--accent-algorithms) 16%, transparent),
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 90% 68%,
-      color-mix(in oklab, var(--accent-systems) 10%, transparent),
-      transparent 32%
-    ),
-    linear-gradient(
-      118deg,
-      var(--background) 12%,
-      color-mix(in oklab, var(--background) 88%, var(--surface)) 58%,
-      var(--background) 100%
-    );
+/* Landing-only fallback: an intentionally quiet field that still reads without WebGL. */
+.landing-trace-field {
+  opacity: 0.9;
 }
 
-.landing-topology-scrim {
+.landing-trace-field-line {
+  display: block;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(125, 163, 191, 0.03) 9%,
+    rgba(154, 198, 230, 0.16) 48%,
+    rgba(125, 163, 191, 0.035) 88%,
+    transparent 100%
+  );
+  animation-name: landing-trace-line-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.landing-trace-veil {
   background:
+    radial-gradient(
+      circle at 73% 50%,
+      transparent 0%,
+      rgba(10, 10, 10, 0.14) 38%,
+      rgba(10, 10, 10, 0.67) 100%
+    ),
     linear-gradient(
       90deg,
-      var(--background) 0%,
-      color-mix(in oklab, var(--background) 94%, transparent) 29%,
-      color-mix(in oklab, var(--background) 62%, transparent) 50%,
-      color-mix(in oklab, var(--background) 18%, transparent) 74%,
-      transparent 100%
-    ),
-    linear-gradient(
-      0deg,
-      var(--background) 0%,
-      color-mix(in oklab, var(--background) 62%, transparent) 18%,
-      transparent 52%
+      #0a0a0a 0%,
+      rgba(10, 10, 10, 0.95) 36%,
+      rgba(10, 10, 10, 0.36) 64%,
+      rgba(10, 10, 10, 0.1) 100%
     );
 }
 
-@media (max-width: 640px) {
-  .landing-topology-scrim {
-    background:
-      linear-gradient(
-        90deg,
-        var(--background) 0%,
-        color-mix(in oklab, var(--background) 92%, transparent) 53%,
-        color-mix(in oklab, var(--background) 45%, transparent) 82%,
-        transparent 100%
-      ),
-      linear-gradient(
-        0deg,
-        var(--background) 0%,
-        color-mix(in oklab, var(--background) 60%, transparent) 22%,
-        transparent 55%
-      );
+.landing-choice-veil {
+  background:
+    radial-gradient(
+      circle at 17% 16%,
+      rgba(58, 128, 172, 0.09) 0%,
+      rgba(10, 10, 10, 0) 34%
+    ),
+    radial-gradient(
+      circle at 80% 74%,
+      rgba(132, 94, 178, 0.075) 0%,
+      rgba(10, 10, 10, 0) 31%
+    ),
+    linear-gradient(
+      126deg,
+      rgba(10, 10, 10, 0.06) 0%,
+      rgba(10, 10, 10, 0.56) 48%,
+      rgba(10, 10, 10, 0.16) 100%
+    );
+}
+
+.landing-hero-word {
+  display: inline-block;
+  will-change: filter, opacity, transform;
+}
+
+.landing-scroll-hint {
+  animation: landing-scroll-hint 1.8s ease-in-out infinite;
+}
+
+@keyframes landing-trace-line-drift {
+  from {
+    transform: translate3d(-2.5%, -3px, 0);
+  }
+
+  to {
+    transform: translate3d(3.5%, 4px, 0);
+  }
+}
+
+@keyframes landing-scroll-hint {
+  0%,
+  100% {
+    transform: translateY(-1px);
+  }
+
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-trace-field-line {
+    animation: none !important;
+  }
+
+  .landing-scroll-hint {
+    animation: none !important;
   }
 }

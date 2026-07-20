@@ -48,6 +48,7 @@ import { isLiveMode } from "../lib/apiClient";
 import { GeneratedConceptLogic } from "../features/generate/GeneratedConceptLogic";
 import { modifyGeneratedSimulation } from "../features/generate/modifyGeneratedSimulation";
 import { ConceptWorkbench } from "../features/code-trace/ConceptWorkbench";
+import { TraceKernelMark } from "../components/TraceKernelMark";
 
 const sectionVisuals = {
   algorithms: { icon: Workflow, accent: "text-accent-algorithms" },
@@ -577,11 +578,11 @@ export default function Workspace() {
   const workspace = (
     <div className="flex h-screen flex-col overflow-hidden">
       <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface/45 px-4">
-        <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-foreground text-background font-mono text-xs">
-            ∷
+        <Link to="/" className="flex items-center gap-2.5 text-sm">
+          <TraceKernelMark className="h-7 w-7 text-foreground" />
+          <span className="hidden font-mono text-[0.7rem] font-medium uppercase tracking-[0.18em] sm:inline">
+            Trace Kernel
           </span>
-          <span className="hidden sm:inline">CS Simulator</span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
           <button
@@ -608,7 +609,7 @@ export default function Workspace() {
           </button>
           <button
             type="button"
-            aria-label="Open concept copilot"
+            aria-label="Open Trace Kernel Copilot"
             onClick={() => setChatOpen(true)}
             className="rounded-lg border border-border p-2 text-muted transition hover:bg-surface-hover hover:text-foreground"
           >

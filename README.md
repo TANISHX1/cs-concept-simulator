@@ -1,13 +1,13 @@
-# CS Concept Simulator
+# Trace Kernel
 
 > An AI-powered learning platform that turns computer science algorithms into interactive, step-by-step visual simulations — with an agentic Concept Copilot that can explain, navigate, and modify simulations in real time.
 
 <!-- Replace with an actual workspace screenshot before submission -->
-<!-- ![CS Concept Simulator workspace](docs/screenshots/workspace.png) -->
+<!-- ![Trace Kernel workspace](docs/screenshots/workspace.png) -->
 
 ## What it does
 
-CS Concept Simulator transforms how students learn algorithms and data structures. Instead of reading static textbook diagrams, users can:
+Trace Kernel transforms how students learn algorithms and data structures. Instead of reading static textbook diagrams, users can:
 
 - **Explore curated concepts** — sorting algorithms, graph traversals, shortest paths, and scheduling — through animated, step-by-step array and graph visualizations.
 - **Generate any concept on demand** — type a prompt like "red-black tree insertion" or "topological sort" and the AI produces a complete interactive simulation with pseudocode, complexity analysis, and common pitfalls.

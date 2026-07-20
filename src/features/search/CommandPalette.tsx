@@ -8,6 +8,7 @@ import {
   CUSTOM_SIMULATIONS_SECTION,
   useGeneratedConcepts,
 } from "../generate/GeneratedConceptsContext";
+import { TraceKernelMark } from "../../components/TraceKernelMark";
 
 type CommandPaletteProps = {
   open: boolean;
@@ -95,8 +96,8 @@ export function CommandPalette({
                   }}
                   className="flex cursor-pointer items-start gap-3 rounded-xl px-3 py-3 text-sm outline-none transition data-[selected=true]:bg-surface-hover"
                 >
-                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-border bg-background font-mono text-xs text-muted">
-                    ∷
+                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border border-border bg-background text-muted">
+                    <TraceKernelMark className="h-4 w-4" />
                   </span>
                   <span className="min-w-0">
                     <span className="block font-medium text-foreground">

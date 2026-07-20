@@ -1,10 +1,10 @@
-# CS Concept Simulator — AI Project Context
+# Trace Kernel — AI Project Context
 
 This document is the working memory for future AI coding sessions. It records product decisions, implementation details, visual rules, routes, content conventions, and current status. Treat it as the project source of truth together with the original specification.
 
 ## Product purpose
 
-CS Concept Simulator is a client-rendered learning workspace. It makes computer science concepts tangible through interactive visual simulations, structured explanations, C-style pseudocode, complexity summaries, pitfalls, references, and an optional concept-aware AI copilot.
+Trace Kernel is a client-rendered learning workspace. It makes computer science concepts tangible through interactive visual simulations, structured explanations, C-style pseudocode, complexity summaries, pitfalls, references, and an optional concept-aware AI copilot.
 
 There is no login, authentication, database, CMS, account system, or persistent server-side user data.
 

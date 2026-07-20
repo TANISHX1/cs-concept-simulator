@@ -1,5 +1,5 @@
 ================================================================================
-CS CONCEPT SIMULATOR — FULL PROJECT SPECIFICATION FOR AI BUILD AGENT
+TRACE KERNEL — FULL PROJECT SPECIFICATION FOR AI BUILD AGENT
 ================================================================================
 Document purpose: This file is the single source of truth for an AI coding
 agent to scaffold, build, and extend this application. Follow it exactly.
@@ -16,7 +16,7 @@ the document (Sections 2 and 3) — this is intentional, not an error.
 ================================================================================
 1. PROJECT OVERVIEW
 ================================================================================
-Name: CS Concept Simulator (working title — agent may propose alternatives)
+Name: Trace Kernel
 
 What it is: A web application for learning computer science concepts through
 interactive visual simulations. Organized into top-level sections (Algorithms,
