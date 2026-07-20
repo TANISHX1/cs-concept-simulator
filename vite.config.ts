@@ -5,4 +5,17 @@ import mdx from "@mdx-js/rollup";
 export default defineConfig({
   plugins: [react(), mdx()],
   server: { port: 5173 },
+  build: {
+    chunkSizeWarningLimit: 700,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("/node_modules/three/")) return "three";
+          if (id.includes("/node_modules/@react-three/")) {
+            return "react-three";
+          }
+        },
+      },
+    },
+  },
 });

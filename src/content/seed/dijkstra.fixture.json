@@ -1,0 +1,39 @@
+{
+  "title": "Dijkstra's Shortest-Path Traversal",
+  "visualType": "graph",
+  "initialState": {
+    "nodes": [
+      { "id": "s", "label": "Start" },
+      { "id": "a", "label": "A" },
+      { "id": "b", "label": "B" },
+      { "id": "c", "label": "C" },
+      { "id": "d", "label": "Goal" }
+    ],
+    "edges": [
+      { "from": "s", "to": "a" },
+      { "from": "s", "to": "b" },
+      { "from": "a", "to": "c" },
+      { "from": "b", "to": "c" },
+      { "from": "c", "to": "d" }
+    ]
+  },
+  "steps": [
+    { "type": "VISIT_NODE", "id": "s" },
+    { "type": "TRAVERSE_EDGE", "from": "s", "to": "a" },
+    { "type": "HIGHLIGHT", "ids": ["a", "b"] },
+    { "type": "VISIT_NODE", "id": "a" },
+    { "type": "TRAVERSE_EDGE", "from": "a", "to": "c" },
+    { "type": "VISIT_NODE", "id": "c" },
+    { "type": "TRAVERSE_EDGE", "from": "c", "to": "d" },
+    { "type": "VISIT_NODE", "id": "d" }
+  ],
+  "pseudocode": "void dijkstra(Graph graph, Node start) {\n  setAllDistances(INFINITY);\n  distance[start] = 0;\n  while (!queueEmpty()) {\n    Node current = extractMin();\n    relaxEachOutgoingEdge(current);\n  }\n}",
+  "complexity": {
+    "time": "O((V + E) log V)",
+    "space": "O(V)"
+  },
+  "pitfalls": [
+    "Dijkstra's algorithm requires non-negative edge weights.",
+    "Ignore stale priority-queue entries after a shorter path is found."
+  ]
+}

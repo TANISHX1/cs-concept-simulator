@@ -1,0 +1,23 @@
+{
+  "title": "Binary Search: Narrow the Sorted Range",
+  "visualType": "array",
+  "initialState": [2, 5, 8, 12, 16, 23, 31, 38, 44, 52, 61, 67, 73, 81, 89, 97],
+  "steps": [
+    { "type": "HIGHLIGHT", "indices": [0, 7, 15] },
+    { "type": "COMPARE", "indices": [7, 10] },
+    { "type": "HIGHLIGHT", "indices": [8, 11, 15] },
+    { "type": "COMPARE", "indices": [11, 10] },
+    { "type": "HIGHLIGHT", "indices": [8, 9, 10] },
+    { "type": "COMPARE", "indices": [9, 10] },
+    { "type": "HIGHLIGHT", "indices": [10] }
+  ],
+  "pseudocode": "int binarySearch(int arr[], int n, int target) {\n  int low = 0, high = n - 1;\n  while (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] == target) return mid;\n    if (arr[mid] < target) low = mid + 1;\n    else high = mid - 1;\n  }\n  return -1;\n}",
+  "complexity": {
+    "time": "O(log n)",
+    "space": "O(1)"
+  },
+  "pitfalls": [
+    "The input must already be sorted.",
+    "Use an overflow-safe midpoint expression."
+  ]
+}

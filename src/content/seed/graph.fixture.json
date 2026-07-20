@@ -1,0 +1,35 @@
+{
+  "title": "Breadth-First Search",
+  "visualType": "graph",
+  "initialState": {
+    "nodes": [
+      { "id": "a", "label": "A" },
+      { "id": "b", "label": "B" },
+      { "id": "c", "label": "C" },
+      { "id": "d", "label": "D" }
+    ],
+    "edges": [
+      { "from": "a", "to": "b" },
+      { "from": "a", "to": "c" },
+      { "from": "b", "to": "d" }
+    ]
+  },
+  "steps": [
+    { "type": "VISIT_NODE", "id": "a" },
+    { "type": "TRAVERSE_EDGE", "from": "a", "to": "b" },
+    { "type": "VISIT_NODE", "id": "b" },
+    { "type": "TRAVERSE_EDGE", "from": "a", "to": "c" },
+    { "type": "HIGHLIGHT", "ids": ["b", "c"] },
+    { "type": "TRAVERSE_EDGE", "from": "b", "to": "d" },
+    { "type": "VISIT_NODE", "id": "d" }
+  ],
+  "pseudocode": "void bfs(Node start) {\n  enqueue(start);\n  markVisited(start);\n  while (!queueEmpty()) {\n    Node current = dequeue();\n    forEachNeighbor(current) {\n      if (!isVisited(neighbor)) {\n        markVisited(neighbor);\n        enqueue(neighbor);\n      }\n    }\n  }\n}",
+  "complexity": {
+    "time": "O(V + E)",
+    "space": "O(V)"
+  },
+  "pitfalls": [
+    "Mark nodes visited when they are enqueued to avoid duplicates.",
+    "A disconnected graph requires starting BFS again from each unvisited node."
+  ]
+}

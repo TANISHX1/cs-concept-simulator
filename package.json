@@ -3,25 +3,37 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "scripts": {"dev": "vite", "build": "tsc -b && vite build", "preview": "vite preview"},
+  "scripts": {
+    "dev": "vite",
+    "vercel:dev": "vercel dev --listen 5173",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
+    "@ai-sdk/openai": "^4.0.16",
+    "@ai-sdk/react": "^4.0.34",
     "@mdx-js/react": "^3.0.1",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.17.10",
+    "ai": "^7.0.31",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
     "framer-motion": "^11.11.17",
     "lucide-react": "^0.468.0",
     "motion": "^11.11.17",
+    "openai": "^6.48.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^9.0.1",
     "react-router-dom": "^6.28.0",
     "tailwind-merge": "^2.5.5",
-    "three": "^0.170.0"
+    "three": "^0.170.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@ai-sdk/openai-compatible": "^3.0.12",
+    "@mdx-js/rollup": "^3.0.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/three": "^0.170.0",
@@ -30,7 +42,7 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
     "typescript": "~5.6.3",
-    "vite": "^6.0.1",
-    "@mdx-js/rollup": "^3.0.1"
+    "vercel": "^56.3.2",
+    "vite": "^6.0.1"
   }
 }

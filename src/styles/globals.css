@@ -53,3 +53,53 @@ input:focus-visible {
 @keyframes dash {
   to { stroke-dashoffset: -40; }
 }
+
+@keyframes surface-shimmer {
+  to { transform: translateX(100%); }
+}
+
+@keyframes copilot-thinking-dot {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
+  40% { transform: translateY(-0.2rem); opacity: 1; }
+}
+
+.surface-shimmer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.surface-shimmer::after {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  content: "";
+  background: linear-gradient(
+    90deg,
+    var(--surface) 0%,
+    var(--surface-hover) 50%,
+    var(--surface) 100%
+  );
+  transform: translateX(-100%);
+  animation: surface-shimmer 1.4s ease-in-out infinite;
+}
+
+.surface-shimmer > * {
+  position: relative;
+  z-index: 1;
+}
+
+.copilot-thinking-dot {
+  animation: copilot-thinking-dot 1.2s ease-in-out infinite;
+}
+
+.copilot-thinking-dot:nth-child(2) { animation-delay: 0.15s; }
+.copilot-thinking-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .surface-shimmer::after,
+  .copilot-thinking-dot {
+    animation: none;
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "title": "Depth-First Search",
+  "visualType": "graph",
+  "initialState": {
+    "nodes": [
+      { "id": "a", "label": "A" },
+      { "id": "b", "label": "B" },
+      { "id": "c", "label": "C" },
+      { "id": "d", "label": "D" },
+      { "id": "e", "label": "E" },
+      { "id": "f", "label": "F" }
+    ],
+    "edges": [
+      { "from": "a", "to": "b" },
+      { "from": "a", "to": "c" },
+      { "from": "b", "to": "d" },
+      { "from": "d", "to": "e" },
+      { "from": "c", "to": "f" }
+    ]
+  },
+  "steps": [
+    { "type": "VISIT_NODE", "id": "a" },
+    { "type": "TRAVERSE_EDGE", "from": "a", "to": "b" },
+    { "type": "VISIT_NODE", "id": "b" },
+    { "type": "TRAVERSE_EDGE", "from": "b", "to": "d" },
+    { "type": "VISIT_NODE", "id": "d" },
+    { "type": "TRAVERSE_EDGE", "from": "d", "to": "e" },
+    { "type": "VISIT_NODE", "id": "e" },
+    { "type": "HIGHLIGHT", "ids": ["a", "b", "d", "e"] }
+  ],
+  "pseudocode": "void dfs(Node node) {\n  markVisited(node);\n  forEachNeighbor(node) {\n    if (!isVisited(neighbor)) {\n      dfs(neighbor);\n    }\n  }\n}",
+  "complexity": {
+    "time": "O(V + E)",
+    "space": "O(V)"
+  },
+  "pitfalls": [
+    "Mark a node before exploring its neighbors.",
+    "An iterative DFS needs a stack with a deliberate push order."
+  ]
+}
