@@ -542,8 +542,13 @@ export default function Workspace() {
   const Simulation = concept?.simulation ? lazy(concept.simulation) : null;
   const Logic = concept?.logic ? lazy(concept.logic) : null;
   const tab = new URLSearchParams(loc.search).get("tab") ?? "simulation";
-  const usesFullTraceLayout = Boolean(
-    concept?.hasCodeTrace && concept.codeTrace && tab === "simulation",
+  const codeTraceForCurrentConcept =
+    concept?.section !== "networking" &&
+    concept?.hasCodeTrace &&
+    concept.codeTrace;
+  const usesWideSimulationLayout = Boolean(
+    tab === "simulation" &&
+      (concept?.section === "networking" || codeTraceForCurrentConcept),
   );
   const contentKey = `${loc.pathname}${loc.search}`;
   const isSectionRoute = trail.length === 1 && Boolean(sectionLabels[trail[0]]);
@@ -637,7 +642,7 @@ export default function Workspace() {
             >
               <div
                 className={
-                  usesFullTraceLayout
+                  usesWideSimulationLayout
                     ? "w-full px-5 py-8 sm:px-8 xl:px-10"
                     : "mx-auto max-w-4xl px-5 py-8 sm:px-8"
                 }
@@ -691,10 +696,11 @@ export default function Workspace() {
                   >
                     {Simulation && (
                       <SimulationErrorBoundary resetKey={path}>
-                        {concept.hasCodeTrace && concept.codeTrace ? (
+                        {codeTraceForCurrentConcept ? (
                           <ConceptWorkbench
                             Simulation={Simulation}
-                            trace={concept.codeTrace}
+                            trace={codeTraceForCurrentConcept}
+                            accentSection={concept.accentSection}
                           />
                         ) : (
                           <Simulation />

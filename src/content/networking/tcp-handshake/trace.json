@@ -1,0 +1,95 @@
+{
+  "language": "c",
+  "sourceCode": "typedef enum {\n  CLOSED, LISTEN, SYN_SENT, SYN_RCVD, ESTABLISHED\n} TcpState;\n\ntypedef struct {\n  TcpState state;\n  int nextSeq;\n  int expectedAck;\n} Endpoint;\n\nvoid threeWayHandshake(Endpoint *client, Endpoint *server) {\n  int clientIsn = 1000;\n  int serverIsn = 5000;\n\n  client->state = CLOSED;\n  server->state = LISTEN;\n  client->state = SYN_SENT;\n  sendSegment(client, server, SYN, clientIsn, 0);\n\n  int receivedSyn = receiveSegment(server);\n  server->expectedAck = receivedSyn + 1;\n  server->nextSeq = serverIsn + 1;\n  server->state = SYN_RCVD;\n  sendSegment(server, client, SYN | ACK, serverIsn, server->expectedAck);\n\n  int receivedSynAck = receiveSegment(client);\n  client->expectedAck = serverIsn + 1;\n  client->nextSeq = clientIsn + 1;\n  client->state = ESTABLISHED;\n  sendSegment(client, server, ACK, client->nextSeq, client->expectedAck);\n\n  int receivedAck = receiveSegment(server);\n  if (receivedAck == serverIsn + 1) {\n    server->state = ESTABLISHED;\n  }\n}",
+  "steps": [
+    {
+      "line": 16,
+      "variables": {
+        "client.state": "CLOSED",
+        "server.state": "LISTEN",
+        "clientISN": 1000,
+        "serverISN": 5000
+      },
+      "callStack": ["threeWayHandshake(client, server)"],
+      "stdout": "Server enters LISTEN. No connection exists until a client initiates one."
+    },
+    {
+      "line": 18,
+      "variables": {
+        "client.state": "SYN_SENT",
+        "segment.flags": "SYN",
+        "segment.seq": 1000,
+        "client.nextSeq": 1001
+      },
+      "callStack": ["threeWayHandshake(client, server)", "sendSegment(client → server, SYN)"],
+      "stdout": "Client sends SYN(seq=1000). SYN consumes one sequence number, so the client will next use 1001."
+    },
+    {
+      "line": 23,
+      "variables": {
+        "receivedSyn": 1000,
+        "server.expectedAck": 1001,
+        "server.nextSeq": 5001,
+        "server.state": "SYN_RCVD"
+      },
+      "callStack": ["threeWayHandshake(client, server)", "receiveSegment(server)"],
+      "stdout": "Server receives SYN(seq=1000), calculates ACK=1001, and moves to SYN_RCVD."
+    },
+    {
+      "line": 24,
+      "variables": {
+        "segment.flags": "SYN | ACK",
+        "segment.seq": 5000,
+        "segment.ack": 1001,
+        "server.state": "SYN_RCVD"
+      },
+      "callStack": ["threeWayHandshake(client, server)", "sendSegment(server → client, SYN|ACK)"],
+      "stdout": "Server sends SYN-ACK(seq=5000, ack=1001): it both acknowledges the client and announces its own sequence number."
+    },
+    {
+      "line": 28,
+      "variables": {
+        "receivedSynAck": 5000,
+        "client.expectedAck": 5001,
+        "client.nextSeq": 1001,
+        "client.state": "SYN_SENT"
+      },
+      "callStack": ["threeWayHandshake(client, server)", "receiveSegment(client)"],
+      "stdout": "Client receives SYN-ACK and verifies that ACK=1001 matches the number after its own SYN."
+    },
+    {
+      "line": 30,
+      "variables": {
+        "segment.flags": "ACK",
+        "segment.seq": 1001,
+        "segment.ack": 5001,
+        "client.state": "ESTABLISHED"
+      },
+      "callStack": ["threeWayHandshake(client, server)", "sendSegment(client → server, ACK)"],
+      "stdout": "Client sends ACK(seq=1001, ack=5001) and may enter ESTABLISHED. The final ACK is proof that it received the server's reply."
+    },
+    {
+      "line": 33,
+      "variables": {
+        "receivedAck": 5001,
+        "server.expectedAck": 1001,
+        "server.state": "SYN_RCVD",
+        "check": "5001 == serverISN + 1"
+      },
+      "callStack": ["threeWayHandshake(client, server)", "receiveSegment(server)"],
+      "stdout": "Server receives the final ACK and validates that it acknowledges the server SYN (5000 + 1)."
+    },
+    {
+      "line": 34,
+      "variables": {
+        "client.state": "ESTABLISHED",
+        "server.state": "ESTABLISHED",
+        "client.nextSeq": 1001,
+        "server.nextSeq": 5001
+      },
+      "callStack": ["threeWayHandshake(client, server)"],
+      "stdout": "Server enters ESTABLISHED. Both endpoints agree on the next sequence numbers, so application data can flow reliably."
+    }
+  ],
+  "stepMap": [0, 1, 2, 3, 4, 5, 6, 7]
+}

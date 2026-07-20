@@ -1,0 +1,160 @@
+{
+  "language": "c",
+  "sourceCode": "void bfs(Graph *graph, int source) {\n  bool discovered[MAX_NODES] = {false};\n  Queue queue = createQueue();\n\n  discovered[source] = true;\n  enqueue(&queue, source);\n\n  while (!isEmpty(&queue)) {\n    int current = dequeue(&queue);\n\n    forEach (int neighbor in graph->adj[current]) {\n      if (!discovered[neighbor]) {\n        discovered[neighbor] = true;\n        enqueue(&queue, neighbor);\n      }\n    }\n  }\n\n  logTraversalComplete(discovered);\n}",
+  "steps": [
+    {
+      "line": 6,
+      "variables": {
+        "source": "A",
+        "discovered": ["A"],
+        "queue": ["A"],
+        "front": 0,
+        "rear": 1
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "Mark A as discovered, then enqueue it as the first frontier node."
+    },
+    {
+      "line": 9,
+      "variables": {
+        "current": "A",
+        "discovered": ["A"],
+        "queue": [],
+        "front": 1,
+        "rear": 1
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "Dequeue A. BFS processes every neighbor of A before moving to the next layer."
+    },
+    {
+      "line": 14,
+      "variables": {
+        "current": "A",
+        "newNeighbors": ["B", "C"],
+        "discovered": ["A", "B", "C"],
+        "queue": ["B", "C"],
+        "front": 1,
+        "rear": 3
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "B and C were unvisited, so mark both discovered and append them to the queue."
+    },
+    {
+      "line": 9,
+      "variables": {
+        "current": "B",
+        "discovered": ["A", "B", "C"],
+        "queue": ["C"],
+        "front": 2,
+        "rear": 3
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "Dequeue B. C remains queued because it was discovered at the same depth."
+    },
+    {
+      "line": 14,
+      "variables": {
+        "current": "B",
+        "newNeighbors": ["D", "E"],
+        "skippedNeighbor": "A",
+        "discovered": ["A", "B", "C", "D", "E"],
+        "queue": ["C", "D", "E"],
+        "front": 2,
+        "rear": 5
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "Skip A because it is already discovered. Discover D and E, then enqueue both behind C."
+    },
+    {
+      "line": 9,
+      "variables": {
+        "current": "C",
+        "discovered": ["A", "B", "C", "D", "E"],
+        "queue": ["D", "E"],
+        "front": 3,
+        "rear": 5
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "Dequeue C only after B's complete neighbor list was handled."
+    },
+    {
+      "line": 14,
+      "variables": {
+        "current": "C",
+        "newNeighbors": ["F"],
+        "skippedNeighbor": "A",
+        "discovered": ["A", "B", "C", "D", "E", "F"],
+        "queue": ["D", "E", "F"],
+        "front": 3,
+        "rear": 6
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "A is already known. Discover F and append it behind the existing level-2 nodes."
+    },
+    {
+      "line": 12,
+      "variables": {
+        "current": "D",
+        "neighbor": "B",
+        "discovered": ["A", "B", "C", "D", "E", "F"],
+        "queue": ["E", "F"],
+        "front": 4,
+        "rear": 6
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "Dequeue D. B is already discovered, so the queue does not grow."
+    },
+    {
+      "line": 9,
+      "variables": {
+        "current": "E",
+        "discovered": ["A", "B", "C", "D", "E", "F"],
+        "queue": ["F"],
+        "front": 5,
+        "rear": 6
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "Dequeue E. Its unseen branch can now become the next frontier."
+    },
+    {
+      "line": 14,
+      "variables": {
+        "current": "E",
+        "newNeighbors": ["G"],
+        "skippedNeighbor": "B",
+        "discovered": ["A", "B", "C", "D", "E", "F", "G"],
+        "queue": ["F", "G"],
+        "front": 5,
+        "rear": 7
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "B is known already. Discover G and enqueue it after F."
+    },
+    {
+      "line": 12,
+      "variables": {
+        "current": "F",
+        "neighbor": "C",
+        "discovered": ["A", "B", "C", "D", "E", "F", "G"],
+        "queue": ["G"],
+        "front": 6,
+        "rear": 7
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "Dequeue F. C is already discovered, so no duplicate is enqueued."
+    },
+    {
+      "line": 19,
+      "variables": {
+        "current": "G",
+        "discovered": ["A", "B", "C", "D", "E", "F", "G"],
+        "queue": [],
+        "front": 7,
+        "rear": 7
+      },
+      "callStack": ["bfs(graph, A)"],
+      "stdout": "Dequeue G. Its neighbor E is already discovered; the queue is empty and traversal finishes."
+    }
+  ],
+  "stepMap": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+}

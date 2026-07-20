@@ -2,7 +2,9 @@ import { lazy, Suspense, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, BookOpen, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { LandingMark } from "../components/LandingMark";
 import { SettingsModal } from "../features/settings/SettingsModal";
+import { useTheme } from "../features/theme/ThemeProvider";
 import {
   getAiSettings,
   isLiveMode,
@@ -13,6 +15,7 @@ const HeroScene = lazy(() => import("./HeroScene"));
 
 export default function Landing() {
   const shouldReduceMotion = useReducedMotion();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isStartingLive, setIsStartingLive] = useState(false);
@@ -50,8 +53,8 @@ export default function Landing() {
       <main className="min-h-screen overflow-hidden">
         <nav className="mx-auto flex w-full items-center px-8 py-5 lg:px-10">
           <div className="flex items-center gap-3">
-            <div className="grid h-8 w-8 place-items-center rounded-lg bg-foreground font-mono text-sm text-background">
-              ∷
+            <div className="grid h-9 w-9 place-items-center rounded-[0.72rem] border border-border bg-surface/80 text-foreground shadow-panel backdrop-blur-sm">
+              <LandingMark className="h-5 w-5" />
             </div>
             <span className="font-semibold tracking-tight">
               CS Concept Simulator
@@ -60,18 +63,16 @@ export default function Landing() {
         </nav>
 
         <section className="relative min-h-[calc(100vh-5rem)] w-full overflow-hidden">
-          <div className="pointer-events-none absolute inset-0 translate-x-[3%] scale-[1.02]">
-            <Suspense
-              fallback={
-                <div className="grid h-full place-items-center text-sm text-muted">
-                  Booting scene…
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div className="landing-topology-base absolute inset-0" />
+            {!shouldReduceMotion && (
+              <Suspense fallback={null}>
+                <div className="absolute inset-[-6%] translate-x-[7%] scale-[1.06]">
+                  <HeroScene theme={theme} reduceMotion={false} />
                 </div>
-              }
-            >
-              <HeroScene />
-            </Suspense>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_42%,transparent_0%,color-mix(in_oklab,var(--background)_22%,transparent)_42%,var(--background)_82%)]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+              </Suspense>
+            )}
+            <div className="landing-topology-scrim absolute inset-0" />
           </div>
           <motion.div
             className="relative z-10 mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-[1500px] items-center px-8 py-20 lg:px-10"

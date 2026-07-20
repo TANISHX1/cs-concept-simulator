@@ -1,0 +1,122 @@
+{
+  "language": "c",
+  "sourceCode": "void accessPage(Cache *cache, int page) {\n  int position = findPage(cache->pages, cache->size, page);\n\n  if (position >= 0) {\n    moveToMRU(cache->pages, position);\n    printHit(page);\n    return;\n  }\n\n  if (cache->size == CAPACITY) {\n    int victim = cache->pages[cache->size - 1];\n    removeLRU(cache->pages);\n    printEviction(victim);\n  }\n\n  insertAtMRU(cache->pages, page);\n  printMiss(page);\n}",
+  "steps": [
+    {
+      "line": 16,
+      "variables": {
+        "page": 1,
+        "position": -1,
+        "size": 0,
+        "cache": "[]"
+      },
+      "callStack": ["accessPage(cache, 1)"],
+      "stdout": "MISS page 1 — insert at MRU; cache is now [1]."
+    },
+    {
+      "line": 16,
+      "variables": {
+        "page": 2,
+        "position": -1,
+        "size": 1,
+        "cache": "[1]"
+      },
+      "callStack": ["accessPage(cache, 2)"],
+      "stdout": "MISS page 2 — free capacity remains, so insert at MRU."
+    },
+    {
+      "line": 16,
+      "variables": {
+        "page": 3,
+        "position": -1,
+        "size": 2,
+        "cache": "[2, 1]"
+      },
+      "callStack": ["accessPage(cache, 3)"],
+      "stdout": "MISS page 3 — insert at MRU; page 1 is now least recent."
+    },
+    {
+      "line": 16,
+      "variables": {
+        "page": 4,
+        "position": -1,
+        "size": 3,
+        "cache": "[3, 2, 1]"
+      },
+      "callStack": ["accessPage(cache, 4)"],
+      "stdout": "MISS page 4 — fill the final free cache slot."
+    },
+    {
+      "line": 5,
+      "variables": {
+        "page": 1,
+        "position": 3,
+        "size": 4,
+        "cache": "[4, 3, 2, 1]"
+      },
+      "callStack": ["accessPage(cache, 1)"],
+      "stdout": "HIT page 1 — move it from LRU to MRU without evicting anything."
+    },
+    {
+      "line": 12,
+      "variables": {
+        "page": 5,
+        "position": -1,
+        "size": 4,
+        "victim": 2,
+        "cache": "[1, 4, 3, 2]"
+      },
+      "callStack": ["accessPage(cache, 5)"],
+      "stdout": "MISS page 5 — cache is full, so remove LRU page 2 before inserting 5 at MRU."
+    },
+    {
+      "line": 12,
+      "variables": {
+        "page": 2,
+        "position": -1,
+        "size": 4,
+        "victim": 3,
+        "cache": "[5, 1, 4, 3]"
+      },
+      "callStack": ["accessPage(cache, 2)"],
+      "stdout": "MISS page 2 — it was evicted earlier. Remove current LRU page 3, then insert 2."
+    },
+    {
+      "line": 12,
+      "variables": {
+        "page": 6,
+        "position": -1,
+        "size": 4,
+        "victim": 4,
+        "cache": "[2, 5, 1, 4]"
+      },
+      "callStack": ["accessPage(cache, 6)"],
+      "stdout": "MISS page 6 — evict page 4 because it has gone longest without an access."
+    },
+    {
+      "line": 12,
+      "variables": {
+        "page": 3,
+        "position": -1,
+        "size": 4,
+        "victim": 1,
+        "cache": "[6, 2, 5, 1]"
+      },
+      "callStack": ["accessPage(cache, 3)"],
+      "stdout": "MISS page 3 — evict page 1, the current LRU entry, then promote 3 to MRU."
+    },
+    {
+      "line": 12,
+      "variables": {
+        "page": 4,
+        "position": -1,
+        "size": 4,
+        "victim": 5,
+        "cache": "[3, 6, 2, 5]"
+      },
+      "callStack": ["accessPage(cache, 4)"],
+      "stdout": "MISS page 4 — evict page 5 and insert 4 at MRU; the final order is [4, 3, 6, 2]."
+    }
+  ],
+  "stepMap": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+}

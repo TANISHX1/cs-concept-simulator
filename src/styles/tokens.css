@@ -13,6 +13,8 @@
   --accent-algorithms: oklch(70% 0.15 250);
   --accent-os: oklch(72% 0.16 55);
   --accent-networking: oklch(72% 0.14 150);
+  --network-client-flow: oklch(74% 0.15 235);
+  --network-server-flow: oklch(73% 0.17 335);
   --accent-systems: oklch(70% 0.15 300);
   --accent-languages: oklch(72% 0.14 190);
   --graph-edge-traversed: color-mix(in oklab, var(--accent-algorithms) 62%, var(--border));
@@ -43,6 +45,8 @@
   --accent-algorithms: oklch(55% 0.16 250);
   --accent-os: oklch(58% 0.17 55);
   --accent-networking: oklch(55% 0.15 150);
+  --network-client-flow: oklch(54% 0.16 235);
+  --network-server-flow: oklch(54% 0.17 335);
   --accent-systems: oklch(55% 0.16 300);
   --accent-languages: oklch(55% 0.15 190);
   --graph-edge-traversed: color-mix(in oklab, var(--accent-algorithms) 62%, var(--border));

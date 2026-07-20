@@ -1,281 +1,305 @@
+import { Line } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Grid, Line } from "@react-three/drei";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
-const arrayValues = [0.36, 0.76, 0.52, 0.91, 0.45, 0.68, 0.3, 0.84];
-const codeLineWidths = [1.65, 1.1, 1.45, 0.82, 1.55, 1.25, 1.7];
+type HeroSceneProps = {
+  theme: "dark" | "light";
+  reduceMotion: boolean;
+};
 
-const flowPaths = [
-  [
-    [-2.1, -0.85, -0.25],
-    [-0.7, -0.2, 0.2],
-    [0.25, 0.55, 0.1],
-    [1.95, 0.85, -0.4],
-  ],
-  [
-    [-1.8, 0.7, -0.2],
-    [-0.65, 0.45, 0.35],
-    [0.45, -0.1, 0.05],
-    [2.25, -0.65, -0.3],
-  ],
-  [
-    [-1.65, -0.3, 0.1],
-    [-0.25, -0.95, 0.25],
-    [0.9, -0.55, 0.05],
-    [2.1, 0.22, -0.25],
-  ],
-] as const;
+type Palette = {
+  core: string;
+  coreGlow: string;
+  panel: string;
+  rail: string;
+  railMuted: string;
+  signalA: string;
+  signalB: string;
+  signalC: string;
+  node: string;
+};
 
-function AlgorithmArray() {
-  const group = useRef<THREE.Group>(null);
-  const bars = useRef<(THREE.Mesh | null)[]>([]);
-  const cursor = useRef<THREE.Mesh>(null);
-  const { pointer } = useThree();
+type Vector3Tuple = [number, number, number];
 
-  useFrame(({ clock }, delta) => {
-    if (!group.current || !cursor.current) return;
+const palettes: Record<HeroSceneProps["theme"], Palette> = {
+  dark: {
+    core: "#dae6f3",
+    coreGlow: "#70baff",
+    panel: "#142033",
+    rail: "#31455e",
+    railMuted: "#182638",
+    signalA: "#63c9ff",
+    signalB: "#c99cff",
+    signalC: "#f4c76b",
+    node: "#b8d7f2",
+  },
+  light: {
+    core: "#2d3b50",
+    coreGlow: "#245a9c",
+    panel: "#e7e1d7",
+    rail: "#8d9bb0",
+    railMuted: "#c9d0db",
+    signalA: "#245a9c",
+    signalB: "#8f3f9f",
+    signalC: "#8b6400",
+    node: "#42516a",
+  },
+};
 
-    const time = clock.getElapsedTime();
-    group.current.rotation.y = THREE.MathUtils.lerp(
-      group.current.rotation.y,
-      pointer.x * 0.18,
-      0.025,
-    );
-    group.current.rotation.x = THREE.MathUtils.lerp(
-      group.current.rotation.x,
-      -pointer.y * 0.12,
-      0.025,
-    );
+const guidePaths: Array<{ points: Vector3Tuple[]; tone: keyof Pick<Palette, "signalA" | "signalB" | "signalC" | "railMuted"> }> = [
+  {
+    tone: "signalA",
+    points: [[-3.7, 1.12, -0.8], [-2.1, 0.62, -0.25], [-0.7, 0.78, 0.16], [0.56, 1.34, -0.3]],
+  },
+  {
+    tone: "signalB",
+    points: [[-3.05, -1.55, -0.6], [-1.62, -0.94, 0.2], [-0.58, -1.35, -0.1], [0.84, -0.86, 0.12]],
+  },
+  {
+    tone: "signalC",
+    points: [[0.4, 1.58, -0.5], [1.34, 0.68, 0.12], [2.75, 0.96, -0.12], [3.85, 0.2, -0.6]],
+  },
+  {
+    tone: "railMuted",
+    points: [[0.25, -1.82, -0.7], [1.36, -1.24, 0.08], [2.5, -1.56, -0.18], [3.75, -0.78, -0.72]],
+  },
+];
 
-    bars.current.forEach((bar, index) => {
-      if (!bar) return;
-      const pulse = 0.92 + Math.sin(time * 1.8 + index * 0.8) * 0.08;
-      bar.scale.y = THREE.MathUtils.lerp(bar.scale.y, pulse, 0.08);
-    });
+const bladeLayout: Array<{
+  color: keyof Pick<Palette, "signalA" | "signalB" | "signalC">;
+  phase: number;
+  position: Vector3Tuple;
+  rotation: Vector3Tuple;
+}> = [
+  {
+    color: "signalA",
+    phase: 0,
+    position: [-0.88, 0.6, 0.18],
+    rotation: [0.22, -0.35, 0.56],
+  },
+  {
+    color: "signalB",
+    phase: 2.1,
+    position: [0.7, 0.22, -0.18],
+    rotation: [-0.31, 0.42, -1.58],
+  },
+  {
+    color: "signalC",
+    phase: 4.2,
+    position: [-0.02, -0.88, 0.02],
+    rotation: [0.44, -0.16, -0.49],
+  },
+];
 
-    const progress = (Math.sin(time * 0.62) + 1) * 0.5;
-    cursor.current.position.x = THREE.MathUtils.lerp(-1.48, 1.48, progress);
-    (cursor.current.material as THREE.MeshBasicMaterial).opacity =
-      0.65 + Math.sin(time * 3) * 0.2;
-    group.current.rotation.z += delta * 0.01;
-  });
+function makeNodeField() {
+  const count = 72;
+  const positions = new Float32Array(count * 3);
 
-  return (
-    <group ref={group} position={[1.45, -0.45, 0.25]} rotation={[-0.12, -0.28, 0]}>
-      <mesh position={[0, -0.86, 0]}>
-        <boxGeometry args={[3.85, 0.06, 0.46]} />
-        <meshBasicMaterial color="#273348" transparent opacity={0.7} />
-      </mesh>
-      {arrayValues.map((value, index) => {
-        const height = 0.35 + value * 1.55;
-        const x = -1.48 + index * 0.423;
-        return (
-          <group key={index} position={[x, -0.82, 0]}>
-            <mesh position={[0, height / 2, 0]} ref={(element) => (bars.current[index] = element)}>
-              <boxGeometry args={[0.28, height, 0.28]} />
-              <meshBasicMaterial
-                color={index === 3 ? "#f4c46d" : index % 2 === 0 ? "#7bb4ff" : "#a98bea"}
-                transparent
-                opacity={index === 3 ? 0.95 : 0.78}
-              />
-            </mesh>
-            <mesh position={[0, 0.03, 0.19]}>
-              <boxGeometry args={[0.28, 0.03, 0.02]} />
-              <meshBasicMaterial color="#e7eefb" transparent opacity={0.45} />
-            </mesh>
-          </group>
-        );
-      })}
-      <mesh ref={cursor} position={[-1.48, 0.9, 0.24]}>
-        <boxGeometry args={[0.16, 0.08, 0.05]} />
-        <meshBasicMaterial color="#8cf0c4" transparent opacity={0.85} />
-      </mesh>
-    </group>
-  );
+  for (let index = 0; index < count; index += 1) {
+    const ring = 1.6 + (index % 8) * 0.32;
+    const angle = index * 2.399963229728653;
+    const depth = -1.5 + (index % 5) * 0.46;
+    const offset = index % 2 === 0 ? 0.28 : -0.18;
+
+    positions[index * 3] = Math.cos(angle) * ring + offset;
+    positions[index * 3 + 1] = Math.sin(angle) * ring * 0.58;
+    positions[index * 3 + 2] = depth;
+  }
+
+  return positions;
 }
 
-function InstructionPanel() {
+function CoreBlade({
+  color,
+  highlight,
+  panel,
+  phase,
+  position,
+  reduceMotion,
+  rotation,
+}: {
+  color: string;
+  highlight: string;
+  panel: string;
+  phase: number;
+  position: Vector3Tuple;
+  reduceMotion: boolean;
+  rotation: Vector3Tuple;
+}) {
   const group = useRef<THREE.Group>(null);
-  const activeLine = useRef<THREE.Mesh>(null);
-
-  useFrame(({ clock }, delta) => {
-    if (!group.current || !activeLine.current) return;
-    const time = clock.getElapsedTime();
-    group.current.rotation.y += delta * 0.032;
-    activeLine.current.position.y = 0.6 - ((Math.floor(time * 1.15) % codeLineWidths.length) * 0.2);
-    (activeLine.current.material as THREE.MeshBasicMaterial).opacity =
-      0.46 + Math.sin(time * 3.2) * 0.16;
-  });
-
-  return (
-    <group ref={group} position={[2.22, 0.82, -0.72]} rotation={[0.12, -0.38, 0.06]}>
-      <mesh>
-        <boxGeometry args={[2.35, 1.95, 0.08]} />
-        <meshBasicMaterial color="#111b2a" transparent opacity={0.78} />
-      </mesh>
-      <mesh position={[0, 0, 0.055]}>
-        <boxGeometry args={[2.19, 1.79, 0.01]} />
-        <meshBasicMaterial color="#0b1019" transparent opacity={0.9} />
-      </mesh>
-      <mesh ref={activeLine} position={[-0.08, 0.6, 0.075]}>
-        <boxGeometry args={[2.06, 0.14, 0.012]} />
-        <meshBasicMaterial color="#315b8e" transparent opacity={0.55} />
-      </mesh>
-      {codeLineWidths.map((width, index) => (
-        <mesh key={index} position={[-0.5 + width / 2, 0.6 - index * 0.2, 0.088]}>
-          <boxGeometry args={[width, 0.04, 0.01]} />
-          <meshBasicMaterial
-            color={index === 0 || index === 4 ? "#a98bea" : "#7bb4ff"}
-            transparent
-            opacity={index === 0 || index === 4 ? 0.72 : 0.48}
-          />
-        </mesh>
-      ))}
-      <mesh position={[-0.94, 0.6, 0.09]}>
-        <boxGeometry args={[0.12, 1.48, 0.01]} />
-        <meshBasicMaterial color="#253147" transparent opacity={0.7} />
-      </mesh>
-    </group>
-  );
-}
-
-function PivotGate() {
-  const group = useRef<THREE.Group>(null);
-  const core = useRef<THREE.Mesh>(null);
-
-  useFrame(({ clock }, delta) => {
-    if (!group.current || !core.current) return;
-    group.current.rotation.y += delta * 0.08;
-    core.current.rotation.z = clock.getElapsedTime() * 0.6;
-  });
-
-  return (
-    <group ref={group} position={[0.05, -0.05, 0.15]}>
-      <mesh rotation={[0, 0, Math.PI / 4]}>
-        <boxGeometry args={[0.9, 0.9, 0.04]} />
-        <meshBasicMaterial color="#20334f" transparent opacity={0.38} wireframe />
-      </mesh>
-      <mesh ref={core} rotation={[0.65, 0.2, 0]}>
-        <octahedronGeometry args={[0.32, 0]} />
-        <meshBasicMaterial color="#f4c46d" transparent opacity={0.9} wireframe />
-      </mesh>
-      <mesh position={[-0.72, 0, 0]}>
-        <boxGeometry args={[0.03, 1.4, 0.03]} />
-        <meshBasicMaterial color="#8cf0c4" transparent opacity={0.55} />
-      </mesh>
-      <mesh position={[0.72, 0, 0]}>
-        <boxGeometry args={[0.03, 1.4, 0.03]} />
-        <meshBasicMaterial color="#8cf0c4" transparent opacity={0.55} />
-      </mesh>
-    </group>
-  );
-}
-
-function ControlFlow() {
-  const packets = useRef<(THREE.Mesh | null)[]>([]);
-  const curves = useMemo(
-    () =>
-      flowPaths.map(
-        (points) =>
-          new THREE.CatmullRomCurve3(
-            points.map((point) => new THREE.Vector3(...point)),
-          ),
-      ),
-    [],
-  );
 
   useFrame(({ clock }) => {
+    if (!group.current || reduceMotion) return;
+
     const time = clock.getElapsedTime();
-    packets.current.forEach((packet, index) => {
-      if (!packet) return;
-      const point = curves[index].getPointAt((time * 0.11 + index * 0.29) % 1);
-      packet.position.copy(point);
-      (packet.material as THREE.MeshBasicMaterial).opacity =
-        0.72 + Math.sin(time * 3 + index) * 0.18;
-    });
+    group.current.position.y = position[1] + Math.sin(time * 0.72 + phase) * 0.075;
+    group.current.rotation.z = rotation[2] + Math.sin(time * 0.54 + phase) * 0.07;
   });
 
   return (
-    <group>
-      {flowPaths.map((points, index) => (
-        <Line
-          key={index}
-          points={points}
-          color={index === 1 ? "#a98bea" : "#456987"}
-          transparent
-          opacity={0.48}
-          lineWidth={1}
+    <group ref={group} position={position} rotation={rotation}>
+      <mesh>
+        <boxGeometry args={[1.82, 0.16, 0.13]} />
+        <meshStandardMaterial
+          color={panel}
+          emissive={color}
+          emissiveIntensity={0.08}
+          metalness={0.82}
+          roughness={0.2}
         />
-      ))}
-      {flowPaths.map((_, index) => (
-        <mesh key={index} ref={(element) => (packets.current[index] = element)}>
-          <sphereGeometry args={[0.075, 16, 16]} />
-          <meshBasicMaterial
-            color={index === 1 ? "#f4c46d" : "#8cf0c4"}
-            transparent
-            opacity={0.85}
-          />
-        </mesh>
-      ))}
+      </mesh>
+      <mesh position={[0, 0.047, 0.082]}>
+        <boxGeometry args={[1.62, 0.022, 0.018]} />
+        <meshBasicMaterial color={color} opacity={0.9} transparent />
+      </mesh>
+      <mesh position={[0.58, -0.02, 0.081]}>
+        <boxGeometry args={[0.32, 0.032, 0.02]} />
+        <meshBasicMaterial color={highlight} opacity={0.76} transparent />
+      </mesh>
+      <mesh position={[-0.68, -0.005, 0.09]}>
+        <sphereGeometry args={[0.09, 12, 12]} />
+        <meshBasicMaterial color={color} />
+      </mesh>
     </group>
   );
 }
 
-function ComputationalStage() {
-  const stage = useRef<THREE.Group>(null);
-  const { pointer } = useThree();
+function StateNode({ color, position }: { color: string; position: Vector3Tuple }) {
+  return (
+    <group position={position}>
+      <mesh>
+        <sphereGeometry args={[0.09, 14, 14]} />
+        <meshBasicMaterial color={color} />
+      </mesh>
+      <mesh scale={1.9}>
+        <sphereGeometry args={[0.09, 12, 12]} />
+        <meshBasicMaterial color={color} opacity={0.11} transparent />
+      </mesh>
+    </group>
+  );
+}
+
+function ConceptTopology({ palette, reduceMotion }: { palette: Palette; reduceMotion: boolean }) {
+  const root = useRef<THREE.Group>(null);
+  const cursor = useRef({ x: 0, y: 0 });
+  const { viewport } = useThree();
+  const pointPositions = useMemo(makeNodeField, []);
+  const compact = viewport.width < 9;
+
+  useEffect(() => {
+    if (reduceMotion) return;
+
+    const updateCursor = (event: PointerEvent) => {
+      cursor.current.x = (event.clientX / window.innerWidth - 0.5) * 2;
+      cursor.current.y = (event.clientY / window.innerHeight - 0.5) * 2;
+    };
+
+    window.addEventListener("pointermove", updateCursor, { passive: true });
+    return () => window.removeEventListener("pointermove", updateCursor);
+  }, [reduceMotion]);
 
   useFrame(({ clock }, delta) => {
-    if (!stage.current) return;
-    stage.current.rotation.x = THREE.MathUtils.lerp(
-      stage.current.rotation.x,
-      -0.08 - pointer.y * 0.1,
-      0.025,
+    if (!root.current || reduceMotion) return;
+
+    const easing = 1 - Math.exp(-2.2 * delta);
+    root.current.rotation.y = THREE.MathUtils.lerp(
+      root.current.rotation.y,
+      0.15 + cursor.current.x * 0.14,
+      easing,
     );
-    stage.current.rotation.y = THREE.MathUtils.lerp(
-      stage.current.rotation.y,
-      -0.1 + pointer.x * 0.12,
-      0.025,
+    root.current.rotation.x = THREE.MathUtils.lerp(
+      root.current.rotation.x,
+      -0.04 - cursor.current.y * 0.08,
+      easing,
     );
-    stage.current.position.y = Math.sin(clock.getElapsedTime() * 0.25) * 0.04;
-    stage.current.rotation.z += delta * 0.004;
+    root.current.position.y = Math.sin(clock.getElapsedTime() * 0.28) * 0.065;
   });
 
   return (
-    <group ref={stage} position={[1.15, 0, 0]}>
-      <Grid
-        position={[0.45, -1.45, -0.65]}
-        rotation={[Math.PI / 2, 0, 0]}
-        args={[8, 5]}
-        cellSize={0.35}
-        cellThickness={0.5}
-        sectionSize={1.4}
-        sectionThickness={1}
-        cellColor="#162338"
-        sectionColor="#2b4667"
-        fadeDistance={7}
-        fadeStrength={1.3}
-        infiniteGrid={false}
-      />
-      <AlgorithmArray />
-      <PivotGate />
-      <InstructionPanel />
-      <ControlFlow />
+    <group
+      ref={root}
+      position={[compact ? 0.55 : 1.55, compact ? -0.16 : 0, 0]}
+      scale={compact ? 0.72 : 1}
+    >
+      <points>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[pointPositions, 3]} />
+        </bufferGeometry>
+        <pointsMaterial
+          color={palette.node}
+          depthWrite={false}
+          opacity={0.34}
+          size={0.03}
+          sizeAttenuation
+          transparent
+        />
+      </points>
+
+      {guidePaths.map((path) => (
+        <Line
+          key={path.tone + path.points[0][0]}
+          color={palette[path.tone]}
+          lineWidth={1}
+          opacity={path.tone === "railMuted" ? 0.28 : 0.56}
+          points={path.points}
+          transparent
+        />
+      ))}
+
+      <group rotation={[0.16, -0.25, -0.07]}>
+        <mesh>
+          <octahedronGeometry args={[0.48, 1]} />
+          <meshStandardMaterial
+            color={palette.core}
+            emissive={palette.coreGlow}
+            emissiveIntensity={0.18}
+            metalness={0.74}
+            roughness={0.2}
+          />
+        </mesh>
+        <mesh rotation={[0.4, 0.62, 0]} scale={1.34}>
+          <icosahedronGeometry args={[0.48, 1]} />
+          <meshBasicMaterial color={palette.rail} opacity={0.38} transparent wireframe />
+        </mesh>
+      </group>
+
+      {bladeLayout.map((blade) => (
+        <CoreBlade
+          key={blade.color}
+          color={palette[blade.color]}
+          highlight={palette.core}
+          panel={palette.panel}
+          phase={blade.phase}
+          position={blade.position}
+          reduceMotion={reduceMotion}
+          rotation={blade.rotation}
+        />
+      ))}
+
+      <StateNode color={palette.signalA} position={[-2.12, 0.65, -0.25]} />
+      <StateNode color={palette.signalB} position={[-1.61, -0.94, 0.2]} />
+      <StateNode color={palette.signalC} position={[2.75, 0.96, -0.12]} />
+      <StateNode color={palette.node} position={[2.5, -1.56, -0.18]} />
     </group>
   );
 }
 
-export default function HeroScene() {
+export default function HeroScene({ reduceMotion, theme }: HeroSceneProps) {
+  const palette = palettes[theme];
+
   return (
     <Canvas
-      dpr={[1, 1.5]}
-      camera={{ position: [0, 0, 7.2], fov: 42 }}
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      camera={{ fov: 39, position: [0, 0, 8] }}
+      dpr={[1, 1.35]}
+      frameloop={reduceMotion ? "demand" : "always"}
+      gl={{ alpha: true, antialias: false, powerPreference: "high-performance" }}
+      style={{ pointerEvents: "none" }}
     >
-      <color attach="background" args={["#080b12"]} />
-      <fog attach="fog" args={["#080b12", 4.8, 11]} />
-      <ComputationalStage />
+      <ambientLight intensity={0.65} />
+      <pointLight color={palette.signalA} intensity={5.2} position={[-3, 2.6, 3.4]} />
+      <pointLight color={palette.signalB} intensity={3.4} position={[2.8, -2.1, 2.5]} />
+      <ConceptTopology palette={palette} reduceMotion={reduceMotion} />
     </Canvas>
   );
 }

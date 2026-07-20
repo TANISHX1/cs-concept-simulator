@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type ElementType } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type ElementType,
+} from "react";
 import {
   SimulationControls,
   type SimulationSpeed,
@@ -26,9 +32,11 @@ function traceIndexesFor(
 export function ConceptWorkbench({
   Simulation,
   trace,
+  accentSection = "algorithms",
 }: {
   Simulation: ElementType<TraceableSimulationProps>;
   trace: CodeTrace;
+  accentSection?: string;
 }) {
   const maxStep = Math.max(0, trace.stepMap.length - 1);
   const [currentStep, setCurrentStep] = useState(0);
@@ -65,9 +73,17 @@ export function ConceptWorkbench({
   };
 
   return (
-    <section className="trace-workbench" aria-label="Synchronized simulation and code trace">
+    <section
+      className="trace-workbench"
+      aria-label="Synchronized simulation and code trace"
+      style={
+        {
+          "--trace-accent": `var(--accent-${accentSection})`,
+        } as CSSProperties
+      }
+    >
       <div className="trace-workbench-grid">
-        <section className="trace-visual-panel" aria-label="Merge Sort simulation">
+        <section className="trace-visual-panel" aria-label="Concept simulation">
           <p className="trace-eyebrow">Abstract model</p>
           <Simulation externalStep={currentStep} />
         </section>

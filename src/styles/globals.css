@@ -54,7 +54,7 @@ input:focus-visible {
 .trace-workbench { margin-top: 1.25rem; }
 .trace-panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .trace-panel-header h2 { margin: 0.25rem 0 0; font-size: 1rem; line-height: 1.35; }
-.trace-eyebrow { margin: 0; color: var(--accent-algorithms); font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.trace-eyebrow { margin: 0; color: var(--trace-accent, var(--accent-algorithms)); font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; }
 .trace-step-indicator,
 .trace-language { flex: none; border: 1px solid var(--border); border-radius: 999px; background: var(--background); padding: 0.3rem 0.55rem; color: var(--foreground-muted); font-family: var(--font-mono); font-size: 0.68rem; }
 .trace-panel-meta { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
@@ -65,7 +65,7 @@ input:focus-visible {
 .trace-panel-header { padding: 1rem 1rem 0.8rem; border-bottom: 1px solid var(--border); }
 .trace-code { max-height: 21rem; overflow: auto; padding: 0.7rem 0; background: var(--code-surface); color: var(--code-foreground); font-family: var(--font-mono); font-size: 0.73rem; line-height: 1.7; }
 .trace-code-line { display: grid; grid-template-columns: 2.7rem minmax(max-content, 1fr); min-width: max-content; border-left: 2px solid transparent; padding-right: 1rem; transition: background 0.16s ease, border-color 0.16s ease; }
-.trace-code-line.is-active { border-left-color: var(--accent-algorithms); background: color-mix(in oklab, var(--accent-algorithms) 18%, transparent); }
+.trace-code-line.is-active { border-left-color: var(--trace-accent, var(--accent-algorithms)); background: color-mix(in oklab, var(--trace-accent, var(--accent-algorithms)) 18%, transparent); }
 .trace-line-number { padding-right: 0.75rem; color: var(--foreground-muted); text-align: right; user-select: none; }
 .trace-code-line code { white-space: pre; }
 .trace-inspector { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--border); }
@@ -144,5 +144,63 @@ input:focus-visible {
   .surface-shimmer::after,
   .copilot-thinking-dot {
     animation: none;
+  }
+}
+
+/* Landing-only layer: the CSS field is also the no-WebGL/reduced-motion fallback. */
+.landing-topology-base {
+  background:
+    radial-gradient(
+      circle at 78% 47%,
+      color-mix(in oklab, var(--accent-algorithms) 16%, transparent),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 90% 68%,
+      color-mix(in oklab, var(--accent-systems) 10%, transparent),
+      transparent 32%
+    ),
+    linear-gradient(
+      118deg,
+      var(--background) 12%,
+      color-mix(in oklab, var(--background) 88%, var(--surface)) 58%,
+      var(--background) 100%
+    );
+}
+
+.landing-topology-scrim {
+  background:
+    linear-gradient(
+      90deg,
+      var(--background) 0%,
+      color-mix(in oklab, var(--background) 94%, transparent) 29%,
+      color-mix(in oklab, var(--background) 62%, transparent) 50%,
+      color-mix(in oklab, var(--background) 18%, transparent) 74%,
+      transparent 100%
+    ),
+    linear-gradient(
+      0deg,
+      var(--background) 0%,
+      color-mix(in oklab, var(--background) 62%, transparent) 18%,
+      transparent 52%
+    );
+}
+
+@media (max-width: 640px) {
+  .landing-topology-scrim {
+    background:
+      linear-gradient(
+        90deg,
+        var(--background) 0%,
+        color-mix(in oklab, var(--background) 92%, transparent) 53%,
+        color-mix(in oklab, var(--background) 45%, transparent) 82%,
+        transparent 100%
+      ),
+      linear-gradient(
+        0deg,
+        var(--background) 0%,
+        color-mix(in oklab, var(--background) 60%, transparent) 22%,
+        transparent 55%
+      );
   }
 }

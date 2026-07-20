@@ -9,55 +9,49 @@ DNS translates human-readable domain names (like example.com) into machine-routa
 
 ## Steps
 
-1. Client queries the recursive resolver for example.com.
-2. Recursive resolver queries a root nameserver.
-3. Root responds with a referral to the .com TLD nameserver.
-4. Recursive resolver queries the .com TLD nameserver.
-5. TLD responds with a referral to the authoritative nameserver for example.com.
-6. Recursive resolver queries the authoritative nameserver.
-7. Authoritative responds with the IP address.
-8. Recursive resolver returns the IP to the client and caches the result.
+1. The browser asks one **recursive resolver** for `A example.com`.
+2. The resolver checks its cache. A cache hit ends the lookup immediately.
+3. On a miss, the resolver asks a **root** server where `.com` is served.
+4. The root returns a **referral** to `.com` nameservers — not the final IP.
+5. The resolver asks `.com`, which refers it to the **authoritative** nameserver for `example.com`.
+6. The authoritative server returns the actual A record and its **TTL**.
+7. The resolver caches that record, then returns the IP to the browser.
+
+> A referral says *who to ask next*. An answer contains the record the client asked for. The simulation keeps those two response types visibly separate.
 
 ## Pseudocode
 
 ~~~c
 typedef struct {
-    char domain[256];
     char ip[16];
+    int ttl;
+    bool found;
 } DNSRecord;
 
-typedef struct {
-    DNSRecord cache[100];
-    int cacheSize;
-} Resolver;
+DNSRecord resolveA(Resolver *resolver, char *qname) {
+    DNSRecord cached = cacheGet(resolver->cache, qname);
+    if (cached.found) return cached;
 
-char *recursiveLookup(Resolver *res, char *domain) {
-    for (int i = 0; i < res->cacheSize; i++) {
-        if (strcmp(res->cache[i].domain, domain) == 0) {
-            return res->cache[i].ip;
-        }
-    }
-    char *rootResult = queryNameserver("root", domain);
-    if (isAuthoritative(rootResult)) {
-        return cacheResult(res, domain, rootResult);
-    }
-    char *tld = extractTLD(domain);
-    char *tldResult = queryNameserver(tld, domain);
-    if (isAuthoritative(tldResult)) {
-        return cacheResult(res, domain, tldResult);
-    }
-    char *authResult = queryNameserver(domain, domain);
-    return cacheResult(res, domain, authResult);
+    DNSReply root = ask(ROOT_SERVER, qname, "A");
+    Server tld = root.referral;
+
+    DNSReply com = ask(tld, qname, "A");
+    Server authority = com.referral;
+
+    DNSReply reply = ask(authority, qname, "A");
+    cachePut(resolver->cache, qname, reply.ip, reply.ttl);
+    return reply;
 }
 ~~~
 
 ## Complexity
 
-<div className="complexity-grid"><div><span className="complexity-label" style={{ color: 'var(--accent-networking)' }}>Time</span><strong className="complexity-value">O(log n)</strong><span className="complexity-note">~3-4 round trips (cached: O(1))</span></div><div><span className="complexity-label" style={{ color: 'var(--accent-networking)' }}>Space</span><strong className="complexity-value">O(n)</strong><span className="complexity-note">cache entries held by resolver</span></div></div>
+<div className="complexity-grid"><div><span className="complexity-label" style={{ color: 'var(--accent-networking)' }}>Network work</span><strong className="complexity-value">O(depth)</strong><span className="complexity-note">typically root → TLD → authority; cached: no upstream hop</span></div><div><span className="complexity-label" style={{ color: 'var(--accent-networking)' }}>Space</span><strong className="complexity-value">O(C)</strong><span className="complexity-note">C cached records held by the resolver</span></div></div>
 
 ## Common pitfalls
 
 - Cache poisoning — an attacker injects a fake DNS record into a resolver's cache.
 - Assuming DNS resolution always succeeds — networks may have blocked or misconfigured resolvers.
 - Ignoring TTL values — stale cached records can cause connectivity issues after IP changes.
+- Treating a referral as an answer — root and TLD servers normally direct the resolver onward instead of returning the site's A record.
 - DNS over TCP vs UDP — large responses require TCP fallback when the truncation bit is set.

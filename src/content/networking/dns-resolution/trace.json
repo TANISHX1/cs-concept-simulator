@@ -1,0 +1,117 @@
+{
+  "language": "c",
+  "sourceCode": "typedef struct {\n  char ip[16];\n  int ttl;\n  bool found;\n} DNSAnswer;\n\nDNSAnswer resolveA(Resolver *resolver, char *qname) {\n  DNSAnswer cached = cacheGet(resolver->cache, qname);\n  if (cached.found) return cached;\n\n  DNSReply root = ask(ROOT_SERVER, qname, \"A\");\n  Server tld = root.referral;\n\n  DNSReply com = ask(tld, qname, \"A\");\n  Server authority = com.referral;\n\n  DNSReply reply = ask(authority, qname, \"A\");\n  cachePut(resolver->cache, qname, reply.ip, reply.ttl);\n  return reply;\n}",
+  "steps": [
+    {
+      "line": 7,
+      "variables": {
+        "qname": "example.com",
+        "recordType": "A",
+        "cache": "empty"
+      },
+      "callStack": ["resolveA(resolver, example.com)"],
+      "stdout": "Need an IPv4 address for example.com. Start a recursive lookup."
+    },
+    {
+      "line": 8,
+      "variables": {
+        "qname": "example.com",
+        "recordType": "A",
+        "recursionDesired": true
+      },
+      "callStack": ["browserQuery(A example.com)", "resolveA(resolver, example.com)"],
+      "stdout": "Browser sends one recursive query to its resolver: A example.com."
+    },
+    {
+      "line": 8,
+      "variables": {
+        "cacheKey": "A example.com",
+        "cached.found": false,
+        "next": "ask root"
+      },
+      "callStack": ["resolveA(resolver, example.com)", "cacheGet(cache, A example.com)"],
+      "stdout": "Cache miss: no unexpired A record exists, so walk the DNS hierarchy."
+    },
+    {
+      "line": 11,
+      "variables": {
+        "server": "ROOT_SERVER",
+        "qname": "example.com",
+        "recordType": "A"
+      },
+      "callStack": ["resolveA(resolver, example.com)", "ask(ROOT_SERVER, A example.com)"],
+      "stdout": "Query a root server. Root servers direct the resolver to the correct top-level domain."
+    },
+    {
+      "line": 12,
+      "variables": {
+        "root.kind": "REFERRAL",
+        "root.referral": ".com nameservers",
+        "nextServer": "a.gtld-servers.net"
+      },
+      "callStack": ["resolveA(resolver, example.com)"],
+      "stdout": "Root referral received: ask a .com nameserver next. This is not the final IP."
+    },
+    {
+      "line": 14,
+      "variables": {
+        "server": "a.gtld-servers.net",
+        "qname": "example.com",
+        "recordType": "A"
+      },
+      "callStack": ["resolveA(resolver, example.com)", "ask(.com, A example.com)"],
+      "stdout": "Query the .com TLD nameserver to learn who is authoritative for example.com."
+    },
+    {
+      "line": 15,
+      "variables": {
+        "com.kind": "REFERRAL",
+        "com.referral": "ns.example.com",
+        "glueAddress": "198.51.100.53"
+      },
+      "callStack": ["resolveA(resolver, example.com)"],
+      "stdout": "TLD referral received: ns.example.com owns this domain's DNS records."
+    },
+    {
+      "line": 17,
+      "variables": {
+        "server": "ns.example.com",
+        "qname": "example.com",
+        "recordType": "A"
+      },
+      "callStack": ["resolveA(resolver, example.com)", "ask(ns.example.com, A example.com)"],
+      "stdout": "Query the authoritative nameserver — the source of truth for example.com."
+    },
+    {
+      "line": 17,
+      "variables": {
+        "reply.kind": "ANSWER",
+        "reply.ip": "93.184.216.34",
+        "reply.ttl": 3600
+      },
+      "callStack": ["resolveA(resolver, example.com)"],
+      "stdout": "Authoritative answer: example.com A = 93.184.216.34, valid for 3600 seconds."
+    },
+    {
+      "line": 18,
+      "variables": {
+        "cacheKey": "A example.com",
+        "cacheValue": "93.184.216.34",
+        "ttl": 3600
+      },
+      "callStack": ["resolveA(resolver, example.com)", "cachePut(A example.com, 93.184.216.34)"],
+      "stdout": "Store the answer in the resolver cache until its TTL expires."
+    },
+    {
+      "line": 19,
+      "variables": {
+        "return.ip": "93.184.216.34",
+        "return.ttl": 3600,
+        "cache": "ready"
+      },
+      "callStack": ["resolveA(resolver, example.com)"],
+      "stdout": "Return 93.184.216.34 to the browser. Later requests can use the cached answer."
+    }
+  ],
+  "stepMap": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+}

@@ -1,0 +1,151 @@
+{
+  "language": "c",
+  "sourceCode": "int binarySearch(int array[], int length, int target) {\n  int low = 0;\n  int high = length - 1;\n\n  while (low <= high) {\n    int middle = low + (high - low) / 2;\n\n    if (array[middle] == target) {\n      return middle;\n    }\n\n    if (target < array[middle]) {\n      high = middle - 1;\n    } else {\n      low = middle + 1;\n    }\n  }\n\n  return -1;\n}",
+  "steps": [
+    {
+      "line": 1,
+      "variables": {
+        "array": [2, 4, 6, 8, 10, 12, 14, 16],
+        "length": 8,
+        "target": 10
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "Search a sorted array for target 10."
+    },
+    {
+      "line": 2,
+      "variables": {
+        "low": 0,
+        "target": 10
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "Set the lower boundary to index 0."
+    },
+    {
+      "line": 3,
+      "variables": {
+        "low": 0,
+        "high": 7,
+        "target": 10
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "Set the upper boundary to the final index, 7."
+    },
+    {
+      "line": 6,
+      "variables": {
+        "low": 0,
+        "high": 7,
+        "middle": 3,
+        "array[middle]": 8
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "Compute middle = 0 + (7 - 0) / 2 = 3."
+    },
+    {
+      "line": 8,
+      "variables": {
+        "target": 10,
+        "middle": 3,
+        "array[middle]": 8,
+        "equal": false
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "10 does not equal 8; continue the search."
+    },
+    {
+      "line": 12,
+      "variables": {
+        "target": 10,
+        "array[middle]": 8,
+        "targetIsSmaller": false
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "10 is not smaller than 8, so keep the right half."
+    },
+    {
+      "line": 15,
+      "variables": {
+        "low": 4,
+        "high": 7,
+        "middle": 3
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "Set low = middle + 1 = 4."
+    },
+    {
+      "line": 6,
+      "variables": {
+        "low": 4,
+        "high": 7,
+        "middle": 5,
+        "array[middle]": 12
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "Compute middle = 4 + (7 - 4) / 2 = 5."
+    },
+    {
+      "line": 8,
+      "variables": {
+        "target": 10,
+        "middle": 5,
+        "array[middle]": 12,
+        "equal": false
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "10 does not equal 12; continue the search."
+    },
+    {
+      "line": 12,
+      "variables": {
+        "target": 10,
+        "array[middle]": 12,
+        "targetIsSmaller": true
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "10 is smaller than 12, so keep the left half."
+    },
+    {
+      "line": 13,
+      "variables": {
+        "low": 4,
+        "high": 4,
+        "middle": 5
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "Set high = middle - 1 = 4."
+    },
+    {
+      "line": 6,
+      "variables": {
+        "low": 4,
+        "high": 4,
+        "middle": 4,
+        "array[middle]": 10
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "Compute middle = 4 + (4 - 4) / 2 = 4."
+    },
+    {
+      "line": 8,
+      "variables": {
+        "target": 10,
+        "middle": 4,
+        "array[middle]": 10,
+        "equal": true
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "10 equals 10. The target is found."
+    },
+    {
+      "line": 9,
+      "variables": {
+        "result": 4,
+        "target": 10
+      },
+      "callStack": ["binarySearch(array, 8, 10)"],
+      "stdout": "Return index 4."
+    }
+  ],
+  "stepMap": [[0, 2], 3, [4, 5], 6, 7, [8, 9], 10, 11, [12, 13]]
+}

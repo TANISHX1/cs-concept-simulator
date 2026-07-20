@@ -11,19 +11,25 @@ function formatValue(value: unknown) {
 }
 
 function highlightCStyleLine(line: string) {
-  const tokens = line.split(/(\/\/.*|\b(?:void|int|char|float|double|if|else|while|for|return)\b|\b\d+\b)/g);
+  const tokens = line.split(
+    /(\/\/.*|\b(?:void|int|char|float|double|bool|typedef|struct|if|else|while|for|return|break|continue|true|false|NULL)\b|\b\d+\b|\b[A-Za-z_]\w*(?=\s*\())/g,
+  );
 
   return tokens.map((token, index) => {
     if (/^\/\//.test(token)) {
       return <span key={index} className="code-comment">{token}</span>;
     }
 
-    if (/^(void|int|char|float|double|if|else|while|for|return)$/.test(token)) {
+    if (/^(void|int|char|float|double|bool|typedef|struct|if|else|while|for|return|break|continue|true|false|NULL)$/.test(token)) {
       return <span key={index} className="code-keyword">{token}</span>;
     }
 
     if (/^\d+$/.test(token)) {
       return <span key={index} className="code-number">{token}</span>;
+    }
+
+    if (/^[A-Za-z_]\w*$/.test(token)) {
+      return <span key={index} className="code-function">{token}</span>;
     }
 
     return token;

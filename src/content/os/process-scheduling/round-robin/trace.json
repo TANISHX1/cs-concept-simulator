@@ -1,0 +1,149 @@
+{
+  "language": "c",
+  "sourceCode": "void roundRobin(Process readyQueue[], int quantum) {\n  int time = 0;\n\n  while (!isEmpty(readyQueue)) {\n    Process current = dequeue(readyQueue);\n    int slice = current.remaining < quantum\n      ? current.remaining : quantum;\n\n    runOnCpu(current, slice);\n    current.remaining -= slice;\n    time += slice;\n\n    if (current.remaining == 0) {\n      markComplete(current);\n    } else {\n      enqueue(readyQueue, current);\n    }\n  }\n}",
+  "steps": [
+    {
+      "line": 2,
+      "variables": {
+        "quantum": 2,
+        "time": 0,
+        "readyQueue": ["P1", "P2", "P3", "P4"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "Scheduler starts at t=0 with P1 at the front of the ready queue."
+    },
+    {
+      "line": 16,
+      "variables": {
+        "current": "P1",
+        "slice": 2,
+        "remaining": 3,
+        "time": 2,
+        "readyQueue": ["P2", "P3", "P4", "P1"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=0–2: P1 uses the full quantum. It still has 3 ticks, so enqueue it at the tail."
+    },
+    {
+      "line": 16,
+      "variables": {
+        "current": "P2",
+        "slice": 2,
+        "remaining": 1,
+        "time": 4,
+        "readyQueue": ["P3", "P4", "P1", "P2"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=2–4: P2 uses the full quantum. It still has 1 tick, so enqueue it at the tail."
+    },
+    {
+      "line": 16,
+      "variables": {
+        "current": "P3",
+        "slice": 2,
+        "remaining": 5,
+        "time": 6,
+        "readyQueue": ["P4", "P1", "P2", "P3"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=4–6: P3 uses the full quantum. It still has 5 ticks, so enqueue it at the tail."
+    },
+    {
+      "line": 16,
+      "variables": {
+        "current": "P4",
+        "slice": 2,
+        "remaining": 2,
+        "time": 8,
+        "readyQueue": ["P1", "P2", "P3", "P4"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=6–8: P4 uses the full quantum. It still has 2 ticks, so enqueue it at the tail."
+    },
+    {
+      "line": 16,
+      "variables": {
+        "current": "P1",
+        "slice": 2,
+        "remaining": 1,
+        "time": 10,
+        "readyQueue": ["P2", "P3", "P4", "P1"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=8–10: P1 uses the full quantum. It still has 1 tick, so enqueue it at the tail."
+    },
+    {
+      "line": 14,
+      "variables": {
+        "current": "P2",
+        "slice": 1,
+        "remaining": 0,
+        "time": 11,
+        "readyQueue": ["P3", "P4", "P1"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=10–11: P2 needs only 1 tick. Mark P2 complete; it does not return to the queue."
+    },
+    {
+      "line": 16,
+      "variables": {
+        "current": "P3",
+        "slice": 2,
+        "remaining": 3,
+        "time": 13,
+        "readyQueue": ["P4", "P1", "P3"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=11–13: P3 uses the full quantum. It still has 3 ticks, so enqueue it at the tail."
+    },
+    {
+      "line": 14,
+      "variables": {
+        "current": "P4",
+        "slice": 2,
+        "remaining": 0,
+        "time": 15,
+        "readyQueue": ["P1", "P3"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=13–15: P4 finishes exactly at the quantum boundary. Mark P4 complete."
+    },
+    {
+      "line": 14,
+      "variables": {
+        "current": "P1",
+        "slice": 1,
+        "remaining": 0,
+        "time": 16,
+        "readyQueue": ["P3"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=15–16: P1 needs only 1 final tick. Mark P1 complete."
+    },
+    {
+      "line": 16,
+      "variables": {
+        "current": "P3",
+        "slice": 2,
+        "remaining": 1,
+        "time": 18,
+        "readyQueue": ["P3"]
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=16–18: P3 uses the full quantum. It has 1 tick remaining, so enqueue it again."
+    },
+    {
+      "line": 14,
+      "variables": {
+        "current": "P3",
+        "slice": 1,
+        "remaining": 0,
+        "time": 19,
+        "readyQueue": []
+      },
+      "callStack": ["roundRobin(readyQueue, 2)"],
+      "stdout": "t=18–19: P3 completes. The ready queue is empty, so scheduling ends."
+    }
+  ],
+  "stepMap": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+}
