@@ -82,6 +82,15 @@ function SectionOverview({
 
   return (
     <div>
+      {section && (
+        <Link
+          to="/workspace"
+          className="mb-5 inline-flex items-center gap-1 text-xs text-muted transition hover:text-foreground"
+        >
+          <ArrowLeft size={13} aria-hidden="true" />
+          All sections
+        </Link>
+      )}
       <div className="mb-8">
         <p className="font-mono text-[10px] uppercase tracking-[.2em] text-muted">
           {section ? "Section overview" : "Workspace overview"}
