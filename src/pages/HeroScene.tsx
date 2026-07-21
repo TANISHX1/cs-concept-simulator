@@ -1,4 +1,4 @@
-import { Float, useGLTF } from "@react-three/drei";
+import { Environment, Float, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { gsap } from "gsap";
 import { Suspense, useEffect, useRef } from "react";
@@ -10,10 +10,10 @@ export type TraceSignal = {
   sequence: number;
 };
 
-const MODEL_URL = new URL(
-  "../../Meshy_AI_Something_in_the_Dark_0720221034_texture.glb",
-  import.meta.url,
-).href;
+/* ── Use YOUR zigzag brushed-steel model from /public ── */
+const MODEL_URL = "/hero-model.glb";
+const CHROME_COLOR = new THREE.Color("#c8cdd5");
+const CHROME_EMISSIVE = new THREE.Color("#1a1e28");
 
 type TraceState = {
   flash: number;
@@ -34,6 +34,39 @@ function SuppliedModel({
   const traceRef = useRef<TraceState>({ flash: 0, progress: 0 });
   const { size } = useThree();
   const isCompact = size.width < 700;
+
+  useEffect(() => {
+    const createdMaterials: THREE.Material[] = [];
+
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const previous = child.material;
+        if (Array.isArray(previous)) {
+          previous.forEach((material) => material.dispose());
+        } else {
+          previous.dispose();
+        }
+
+        const material = new THREE.MeshStandardMaterial({
+          color: CHROME_COLOR,
+          metalness: 0.95,
+          roughness: 0.12,
+          emissive: CHROME_EMISSIVE,
+          emissiveIntensity: 0.08,
+          envMapIntensity: 1.6,
+        });
+
+        createdMaterials.push(material);
+        child.material = material;
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+
+    return () => {
+      createdMaterials.forEach((material) => material.dispose());
+    };
+  }, [scene]);
 
   useEffect(() => {
     if (reduceMotion) {
@@ -170,10 +203,18 @@ export function HeroScene({ reduceMotion, traceSignal }: HeroSceneProps) {
         frameloop={reduceMotion ? "demand" : "always"}
         gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
       >
-        <ambientLight intensity={0.48} />
-        <directionalLight color="#d9efff" intensity={1.7} position={[2.8, 3.2, 4]} />
-        <directionalLight color="#315a7b" intensity={1.35} position={[-3.2, -1.8, 2.5]} />
-        <pointLight color="#5d96c3" distance={8} intensity={1.25} position={[-2.2, 1.4, 3]} />
+        {/* Darker base so surface flaws are hidden */}
+        <ambientLight intensity={0.05} />
+        <Environment preset="city" environmentIntensity={0.15} />
+        
+        {/* Strong, sharp Rim Light from the Back-Right */}
+        <directionalLight color="#d9efff" intensity={3.8} position={[4, 2, -4]} />
+        
+        {/* Strong, sharp Rim Light from the Back-Left */}
+        <directionalLight color="#a6d9ff" intensity={2.8} position={[-4, -1, -3]} />
+        
+        {/* Very faint front fill just to prevent pure blackness */}
+        <directionalLight color="#315a7b" intensity={0.15} position={[0, 2, 4]} />
         <Suspense fallback={null}>
           <SuppliedModel reduceMotion={reduceMotion} traceSignal={traceSignal} />
         </Suspense>

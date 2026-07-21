@@ -112,7 +112,7 @@ function SectionOverview({
               <Link
                 key={key}
                 to={`/workspace/${key}`}
-                className="group rounded-2xl border border-border bg-surface/45 p-5 transition hover:-translate-y-0.5 hover:bg-surface-hover"
+                className="group rounded-2xl border border-card-border bg-surface/60 p-5 shadow-card transition hover:-translate-y-0.5 hover:border-card-border-hover hover:bg-surface-hover hover:shadow-card-hover"
               >
                 <div className="relative mb-8 flex h-16 items-center justify-between overflow-hidden rounded-xl bg-background px-4">
                   <Icon className={visual.accent} size={22} strokeWidth={1.7} />
@@ -176,7 +176,7 @@ function SectionOverview({
             <Link
               key={item.path}
               to={`/workspace/${item.path}`}
-              className="group rounded-2xl border border-border bg-surface/45 p-5 transition hover:-translate-y-0.5 hover:bg-surface-hover"
+              className="group rounded-2xl border border-card-border bg-surface/60 p-5 shadow-card transition hover:-translate-y-0.5 hover:border-card-border-hover hover:bg-surface-hover hover:shadow-card-hover"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -279,7 +279,7 @@ function CustomSimulationsOverview({
           <Link
             key={slug}
             to={`/workspace/${CUSTOM_SIMULATIONS_SECTION}/${slug}`}
-            className="group flex min-h-64 flex-col rounded-2xl border border-border bg-surface/45 p-5 transition hover:-translate-y-0.5 hover:bg-surface-hover"
+            className="group flex min-h-64 flex-col rounded-2xl border border-card-border bg-surface/60 p-5 shadow-card transition hover:-translate-y-0.5 hover:border-card-border-hover hover:bg-surface-hover hover:shadow-card-hover"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
