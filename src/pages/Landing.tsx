@@ -394,7 +394,7 @@ export function Landing() {
   return (
     <main
       ref={landingRef}
-      className="relative min-h-screen overflow-clip bg-[#0a0a0a] text-[#e7ebef]"
+      className="relative min-h-screen overflow-clip bg-background text-foreground"
     >
       <section className="relative min-h-svh overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -423,18 +423,21 @@ export function Landing() {
           <div className="landing-trace-veil absolute inset-0" />
         </div>
 
-        <Suspense fallback={<div className="absolute inset-0 bg-[#0a0a0a]" />}>
+        {/* Silver ambient glow */}
+        <div className="hero-silver-glow" />
+
+        <Suspense fallback={<div className="absolute inset-0 bg-background" />}>
           <HeroScene reduceMotion={reducedMotion} traceSignal={traceSignal} />
         </Suspense>
 
         <nav className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 sm:px-8 sm:py-7 lg:px-10 lg:py-8">
-          <div className="flex items-center gap-3 font-mono text-[0.68rem] font-medium uppercase tracking-[0.2em] text-[#f1f4f6] sm:text-xs">
-            <TraceKernelMark className="h-7 w-7 text-[#e9edf1]" />
+          <div className="flex items-center gap-3 font-mono text-[0.68rem] font-medium uppercase tracking-[0.2em] text-foreground sm:text-xs">
+            <TraceKernelMark className="h-7 w-7 text-foreground" />
             <span>Trace Kernel</span>
           </div>
           <button
             type="button"
-            className="group inline-flex items-center gap-2 rounded-full border border-white/20 px-3.5 py-2 font-mono text-[0.65rem] tracking-[0.16em] text-white/75 transition-colors hover:border-white/45 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+            className="group inline-flex items-center gap-2 rounded-full border border-border px-3.5 py-2 font-mono text-[0.65rem] tracking-[0.16em] text-muted transition-colors hover:border-foreground/45 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-algorithms"
           >
             MENU
             <Menu
@@ -448,19 +451,19 @@ export function Landing() {
           ref={heroCopyRef}
           className="absolute left-5 top-[47%] z-10 w-[min(72rem,calc(100vw-2.5rem))] -translate-y-1/2 sm:left-8 lg:left-[clamp(2.5rem,6vw,8.5rem)]"
         >
-          <p className="mb-5 font-mono text-[0.62rem] uppercase tracking-[0.27em] text-sky-300/75 sm:text-[0.68rem]">
+          <p className="mb-5 font-mono text-[0.62rem] uppercase tracking-[0.27em] text-accent-algorithms sm:text-[0.68rem]">
             An interactive CS lab
           </p>
           <h1
             ref={headingRef}
-            className="max-w-[72rem] text-[clamp(3.1rem,5.6vw,6.7rem)] font-semibold leading-[0.9] tracking-[-0.075em] text-[#e7ebef]"
+            className="max-w-[72rem] text-[clamp(3.1rem,5.6vw,6.7rem)] font-semibold leading-[0.9] tracking-[-0.075em] text-foreground"
           >
             <span className="block">Make the invisible parts</span>
             <span className="block">of computing visible.</span>
           </h1>
           <p
             ref={paragraphRef}
-            className="mt-7 max-w-[34rem] text-base leading-7 text-[#a3aab2] sm:text-lg"
+            className="mt-7 max-w-[34rem] text-base leading-7 text-muted sm:text-lg"
           >
             Explore algorithms, systems, and protocols as living diagrams.
             Change a step. Watch the model respond. Build intuition that
@@ -475,16 +478,16 @@ export function Landing() {
             }}
             onMouseEnter={() => animateCtaHover(true)}
             onMouseLeave={() => animateCtaHover(false)}
-            className="group relative mt-9 inline-flex items-center gap-3 py-2 font-mono text-xs font-medium tracking-[0.13em] text-[#f3f5f7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+            className="group relative mt-9 inline-flex items-center gap-3 py-2 font-mono text-xs font-medium tracking-[0.13em] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-algorithms"
           >
             ENTER THE LAB
-            <span ref={ctaArrowRef} aria-hidden="true" className="text-base">
+            <span ref={ctaArrowRef} aria-hidden="true" className="text-base text-accent-algorithms transition-transform group-hover:translate-x-1">
               →
             </span>
             <span
               ref={ctaUnderlineRef}
               aria-hidden="true"
-              className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-white/80"
+              className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-accent-algorithms/80"
             />
           </button>
         </div>
@@ -492,7 +495,7 @@ export function Landing() {
         <div className="absolute inset-x-0 bottom-0 z-20 grid grid-cols-[1fr_auto_1fr] items-end gap-3 px-5 pb-5 sm:px-8 sm:pb-7 lg:px-10 lg:pb-8">
           <div
             aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/65"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted"
           >
             <ChevronDown className="landing-scroll-hint h-4 w-4" />
           </div>
@@ -518,23 +521,23 @@ export function Landing() {
                 endTrace();
               }
             }}
-            className="group flex max-w-[15rem] flex-col items-center rounded-md px-3 py-2 text-center font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 disabled:cursor-default disabled:opacity-60"
+            className="group flex max-w-[15rem] flex-col items-center rounded-md px-3 py-2 text-center font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-algorithms disabled:cursor-default disabled:opacity-60"
             aria-label="Hold to trace the network"
           >
             <span
               className={`text-[0.63rem] font-medium tracking-[0.16em] transition-colors sm:text-[0.68rem] ${
-                isTracing ? "text-sky-200" : "text-[#e5e8ec]"
+                isTracing ? "text-accent-algorithms" : "text-foreground"
               }`}
             >
               HOLD TO <span aria-hidden="true">⚡</span> TRACE
             </span>
-            <span className="mt-1 text-[0.58rem] italic leading-4 text-[#818a94] sm:text-[0.62rem]">
+            <span className="mt-1 text-[0.58rem] italic leading-4 text-muted sm:text-[0.62rem]">
               an interactive network, waiting to be traced.
             </span>
           </button>
 
-          <div className="ml-auto flex items-center gap-2.5 border-l border-white/15 pl-3 text-right font-mono text-[0.57rem] leading-4 tracking-[0.13em] text-[#aab2ba] sm:pl-4 sm:text-[0.62rem]">
-            <Globe2 aria-hidden="true" className="h-5 w-5 text-sky-200/80" />
+          <div className="ml-auto flex items-center gap-2.5 border-l border-border pl-3 text-right font-mono text-[0.57rem] leading-4 tracking-[0.13em] text-muted sm:pl-4 sm:text-[0.62rem]">
+            <Globe2 aria-hidden="true" className="h-5 w-5 text-accent-algorithms" />
             <span>AN INTERACTIVE CS LAB</span>
           </div>
         </div>
@@ -569,8 +572,8 @@ export function Landing() {
             ))}
           </div>
           <div className="landing-choice-veil absolute inset-0" />
-          <div className="absolute bottom-[26%] left-[10%] hidden h-px w-[43%] bg-gradient-to-r from-sky-200/45 via-sky-200/10 to-transparent lg:block" />
-          <span className="absolute bottom-[calc(26%-0.22rem)] left-[53%] hidden h-2 w-2 rounded-full bg-sky-200/70 shadow-[0_0_1.25rem_rgba(125,211,252,0.72)] lg:block" />
+          <div className="absolute bottom-[26%] left-[10%] hidden h-px w-[43%] bg-gradient-to-r from-accent-algorithms/45 via-accent-algorithms/10 to-transparent lg:block" />
+          <span className="absolute bottom-[calc(26%-0.22rem)] left-[53%] hidden h-2 w-2 rounded-full bg-accent-algorithms/70 shadow-[0_0_1.25rem_var(--accent-algorithms)] lg:block" />
         </div>
 
         <div className="relative mx-auto w-full max-w-[108rem]">
@@ -578,18 +581,18 @@ export function Landing() {
             data-landing-choice-reveal
             className="group max-w-[44rem] pt-3 lg:pt-8"
           >
-            <div className="flex items-center gap-3 font-mono text-[0.65rem] tracking-[0.18em] text-sky-200/85">
+            <div className="flex items-center gap-3 font-mono text-[0.65rem] tracking-[0.18em] text-accent-algorithms">
               <span>01 / CURATED LAB</span>
-              <span aria-hidden="true" className="h-px w-12 bg-sky-200/35" />
+              <span aria-hidden="true" className="h-px w-12 bg-accent-algorithms/35" />
               <BookOpen
                 aria-hidden="true"
                 className="h-4 w-4 transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110"
               />
             </div>
-            <h2 className="mt-7 text-[clamp(3.45rem,6.2vw,7.6rem)] font-semibold leading-[0.83] tracking-[-0.075em] text-[#e7ebef]">
+            <h2 className="mt-7 text-[clamp(3.45rem,6.2vw,7.6rem)] font-semibold leading-[0.83] tracking-[-0.075em] text-foreground">
               Enter the lab.
             </h2>
-            <p className="mt-7 max-w-md text-base leading-7 text-[#9da6af] sm:text-lg">
+            <p className="mt-7 max-w-md text-base leading-7 text-muted sm:text-lg">
               Walk through the ready-made concepts first. Change a step and see the model respond.
             </p>
             <button
@@ -598,14 +601,14 @@ export function Landing() {
                 setAiExperienceMode("demo");
                 navigate("/workspace");
               }}
-              className="relative mt-9 inline-flex items-center gap-3 py-2 font-mono text-xs font-medium tracking-[0.14em] text-sky-100 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+              className="relative mt-9 inline-flex items-center gap-3 py-2 font-mono text-xs font-medium tracking-[0.14em] text-accent-algorithms transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-algorithms"
             >
               EXPLORE CONCEPTS
               <ArrowRight
                 aria-hidden="true"
                 className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
               />
-              <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-sky-100/80 transition-transform duration-300 group-hover:scale-x-100" />
+              <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-accent-algorithms/80 transition-transform duration-300 group-hover:scale-x-100" />
             </button>
           </article>
 
@@ -613,15 +616,15 @@ export function Landing() {
             data-landing-choice-reveal
             className="group ml-auto mt-[clamp(8rem,17svh,15rem)] max-w-[35rem] lg:mr-[5vw]"
           >
-            <div className="flex items-center gap-3 font-mono text-[0.65rem] tracking-[0.18em] text-violet-200/90">
+            <div className="flex items-center gap-3 font-mono text-[0.65rem] tracking-[0.18em] text-accent-systems">
               <Sparkles
                 aria-hidden="true"
                 className="h-4 w-4 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110"
               />
-              <span aria-hidden="true" className="h-px w-12 bg-violet-200/35" />
+              <span aria-hidden="true" className="h-px w-12 bg-accent-systems/35" />
               <span>02 / YOUR PROMPT</span>
             </div>
-            <h2 className="mt-7 text-[clamp(3rem,5.1vw,6.1rem)] font-semibold leading-[0.86] tracking-[-0.07em] text-[#e7ebef]">
+            <h2 className="mt-7 text-[clamp(3rem,5.1vw,6.1rem)] font-semibold leading-[0.86] tracking-[-0.07em] text-foreground">
               Custom simulation.
             </h2>
             <p className="mt-7 max-w-md text-base leading-7 text-[#9da6af] sm:text-lg">
@@ -633,14 +636,14 @@ export function Landing() {
                 setAiExperienceMode("live");
                 navigate("/workspace/generated");
               }}
-              className="relative mt-9 inline-flex items-center gap-3 py-2 font-mono text-xs font-medium tracking-[0.14em] text-violet-100 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+              className="relative mt-9 inline-flex items-center gap-3 py-2 font-mono text-xs font-medium tracking-[0.14em] text-accent-systems transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-systems"
             >
               CREATE A SIMULATION
               <ArrowRight
                 aria-hidden="true"
                 className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
               />
-              <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-violet-100/80 transition-transform duration-300 group-hover:scale-x-100" />
+              <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-accent-systems/80 transition-transform duration-300 group-hover:scale-x-100" />
             </button>
           </article>
         </div>
