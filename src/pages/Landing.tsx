@@ -4,7 +4,6 @@ import {
   ArrowRight,
   BookOpen,
   ChevronDown,
-  Globe2,
   Sparkles,
 } from "lucide-react";
 import Lenis from "lenis";
