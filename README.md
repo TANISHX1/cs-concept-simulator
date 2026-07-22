@@ -156,6 +156,24 @@ api/                        # Vercel Serverless Functions
 
 ---
 
+## 🤖 AI Integration: Codex & GPT-5.6
+
+Trace Kernel was built heavily utilizing OpenAI's models both as the engine of the application and as the primary developer tool.
+
+### GPT-5.6 as the Simulation Engine
+We integrated **GPT-5.6** to power the entire generative backbone of Trace Kernel. 
+- **Simulation Generation (`/api/generate-simulation`):** When a user enters a prompt (e.g., "Tower of Hanoi"), GPT-5.6 is tasked with reasoning through the algorithm, breaking it down into discrete visual states, and outputting a highly structured Zod-validated JSON payload that the frontend can render into interactive 3D/2D views.
+- **Concept Copilot (`/api/chat`):** The streaming chat assistant uses GPT-5.6's advanced context-window to read the active simulation state array and answer user queries with perfect grounded accuracy.
+- **Variation Modifier (`/api/modify-simulation`):** We use GPT-5.6 to execute complex in-place simulation rewrites (like "reverse the linked list") without breaking the structured UI state.
+
+### Codex as our Pair-Programmer
+The entire application architecture, from the Vite/React scaffolding to the complex Zod validation pipelines, was built using **Codex** as an agentic pair-programmer. 
+- Codex generated the initial WebGL rim-light shaders for our 3D Hero section.
+- Codex helped us write the `normalizeRawSpec` pipeline to ensure LLM outputs always match our strict TypeScript interfaces.
+- Codex was used to draft the initial seed files (like Dijkstra's algorithm and Quick Sort) for our zero-config demo mode.
+
+---
+
 ## Local Development
 
 Requirements: Node.js 20+ and npm.

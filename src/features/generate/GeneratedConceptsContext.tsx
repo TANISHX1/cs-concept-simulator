@@ -40,6 +40,7 @@ type GeneratedConceptsContextValue = {
   getGeneratedConcept: (slug: string) => GeneratedConcept | undefined;
   addGeneratedConcept: (spec: SimulationSpec) => GeneratedConcept;
   replaceGeneratedConcept: (slug: string, spec: SimulationSpec) => void;
+  clearGeneratedConcepts: () => void;
 };
 
 const GeneratedConceptsContext = createContext<
@@ -215,6 +216,27 @@ export function GeneratedConceptsProvider({ children }: { children: ReactNode })
     [generatedConcepts],
   );
 
+  const clearGeneratedConcepts = useCallback(() => {
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < window.sessionStorage.length; i++) {
+        const key = window.sessionStorage.key(i);
+        if (key?.startsWith(STORAGE_PREFIX)) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => window.sessionStorage.removeItem(key));
+    } catch {
+      // Ignore storage errors
+    }
+    
+    // Reset to demo fixtures
+    setGeneratedConcepts([]);
+    hasSeededDemoFixtures.current = false;
+    // Re-seed demo fixtures
+    DEMO_FIXTURES.forEach((fixture) => addGeneratedConcept(fixture));
+  }, [addGeneratedConcept]);
+
   const getGeneratedConcept = useCallback(
     (slug: string) =>
       generatedConcepts.find((generatedConcept) => generatedConcept.slug === slug),
@@ -228,6 +250,7 @@ export function GeneratedConceptsProvider({ children }: { children: ReactNode })
       getGeneratedConcept,
       addGeneratedConcept,
       replaceGeneratedConcept,
+      clearGeneratedConcepts,
     }),
     [
       addGeneratedConcept,
@@ -235,6 +258,7 @@ export function GeneratedConceptsProvider({ children }: { children: ReactNode })
       generatedConcepts,
       getGeneratedConcept,
       replaceGeneratedConcept,
+      clearGeneratedConcepts,
     ],
   );
 

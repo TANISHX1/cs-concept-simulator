@@ -4,8 +4,6 @@ import {
   ArrowRight,
   BookOpen,
   ChevronDown,
-  Globe2,
-  Menu,
   Sparkles,
 } from "lucide-react";
 import Lenis from "lenis";
@@ -22,7 +20,7 @@ import {
   useState,
   type PointerEvent,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import { TraceKernelMark } from "@/components/TraceKernelMark";
 import { setAiExperienceMode } from "@/lib/apiClient";
@@ -435,16 +433,16 @@ export function Landing() {
             <TraceKernelMark className="h-7 w-7 text-foreground" />
             <span>Trace Kernel</span>
           </div>
-          <button
-            type="button"
+          <Link
+            to="/workspace"
             className="group inline-flex items-center gap-2 rounded-full border border-border px-3.5 py-2 font-mono text-[0.65rem] tracking-[0.16em] text-muted transition-colors hover:border-foreground/45 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-algorithms"
           >
-            MENU
-            <Menu
+            OPEN LAB
+            <ArrowRight
               aria-hidden="true"
-              className="h-3.5 w-3.5 transition-transform duration-300 group-hover:rotate-90"
+              className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5"
             />
-          </button>
+          </Link>
         </nav>
 
         <div
@@ -536,10 +534,6 @@ export function Landing() {
             </span>
           </button>
 
-          <div className="ml-auto flex items-center gap-2.5 border-l border-border pl-3 text-right font-mono text-[0.57rem] leading-4 tracking-[0.13em] text-muted sm:pl-4 sm:text-[0.62rem]">
-            <Globe2 aria-hidden="true" className="h-5 w-5 text-accent-algorithms" />
-            <span>AN INTERACTIVE CS LAB</span>
-          </div>
         </div>
       </section>
 

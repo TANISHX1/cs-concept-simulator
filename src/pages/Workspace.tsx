@@ -82,6 +82,15 @@ function SectionOverview({
 
   return (
     <div>
+      {section && (
+        <Link
+          to="/workspace"
+          className="mb-5 inline-flex items-center gap-1 text-xs text-muted transition hover:text-foreground"
+        >
+          <ArrowLeft size={13} aria-hidden="true" />
+          All sections
+        </Link>
+      )}
       <div className="mb-8">
         <p className="font-mono text-[10px] uppercase tracking-[.2em] text-muted">
           {section ? "Section overview" : "Workspace overview"}
@@ -254,20 +263,38 @@ function CustomSimulationsOverview({
   liveMode: boolean;
   onOpenSettings: () => void;
 }) {
-  const { generatedConcepts } = useGeneratedConcepts();
+  const { generatedConcepts, clearGeneratedConcepts } = useGeneratedConcepts();
 
   return (
     <div>
-      <div className="mb-8">
-        <p className="font-mono text-[10px] uppercase tracking-[.2em] text-muted">
-          Your workspace
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-          {CUSTOM_SIMULATIONS_LABEL}
-        </h1>
-        <p className="mt-3 max-w-2xl text-muted">
-          Interactive lessons created in this browser session.
-        </p>
+      <Link
+        to="/workspace"
+        className="mb-5 inline-flex items-center gap-1 text-xs text-muted transition hover:text-foreground"
+      >
+        <ArrowLeft size={13} aria-hidden="true" />
+        All sections
+      </Link>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[.2em] text-muted">
+            Your workspace
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+            {CUSTOM_SIMULATIONS_LABEL}
+          </h1>
+          <p className="mt-3 max-w-2xl text-muted">
+            Interactive lessons created in this browser session.
+          </p>
+        </div>
+        {generatedConcepts.length > 3 && (
+          <button
+            type="button"
+            onClick={clearGeneratedConcepts}
+            className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted transition hover:border-destructive/30 hover:text-destructive"
+          >
+            Clear simulations
+          </button>
+        )}
       </div>
       {liveMode ? (
         <GenerateInput variant="panel" />
